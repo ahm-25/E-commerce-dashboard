@@ -120,6 +120,7 @@ defineEmits(['toggle', 'close'])
 
 const storeLinks = [
   { name: 'المنتجات', path: '/dashboard/products', icon: 'ph:package' },
+  { name: 'المخزون', path: '/dashboard/inventory', icon: 'ph:stack' },
   { name: 'الأقسام', path: '/dashboard/categories', icon: 'ph:folders' },
   { name: 'الطلبات', path: '/dashboard/orders', icon: 'ph:shopping-cart' },
   { name: 'العملاء', path: '/dashboard/customers', icon: 'ph:users' },
