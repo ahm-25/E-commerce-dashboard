@@ -33,11 +33,100 @@ export interface Order {
   updatedAt: string
 }
 
+export interface ShippingAddress {
+  name: string
+  street: string
+  city: string
+  state: string
+  country: string
+}
+
+export interface OrderItem {
+  id: string
+  name: string
+  sku: string
+  image?: string
+  variant?: string
+  quantity: number
+  unitPrice: number
+  discount?: number
+  total: number
+}
+
+export interface OrderTimelineEvent {
+  id: string
+  status: string
+  timestamp: string
+  actor?: string
+  note?: string
+  icon?: string
+}
+
+export interface OrderNote {
+  id: string
+  authorName: string
+  authorAvatar?: string
+  createdAt: string
+  content: string
+  type: 'internal' | 'customer'
+}
+
+export interface OrderDetails {
+  id: string
+  orderNumber: string
+  customer: {
+    id: string
+    name: string
+    email?: string
+    phone?: string
+    avatar?: string
+    previousOrdersCount?: number
+    createdAt?: string
+  }
+  items: OrderItem[]
+  pricing: {
+    subtotal: number
+    discount?: number
+    shipping?: number
+    tax?: number
+    total: number
+    currency: string
+  }
+  payment: {
+    status: 'paid' | 'pending' | 'failed' | 'refunded'
+    method?: string
+    transactionId?: string
+    paidAt?: string
+  }
+  shipping?: {
+    address?: ShippingAddress
+    method?: string
+    trackingNumber?: string
+    estimatedDelivery?: string
+  }
+  status: 'new' | 'review' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled' | 'refunded'
+  timeline: OrderTimelineEvent[]
+  notes?: OrderNote[]
+  invoice?: {
+    id: string
+    number: string
+    url?: string
+  }
+  source?: string
+  updateCount?: number
+  createdAt: string
+  updatedAt: string
+}
+
 export const useOrdersStore = defineStore('orders', {
   state: () => ({
     orders: [] as Order[],
     loading: false,
     error: null as string | null,
+    
+    currentOrder: null as OrderDetails | null,
+    loadingOrder: false,
+    orderError: null as string | null,
     totalOrders: 1248,
     newCount: 86,
     processingCount: 142,
@@ -331,6 +420,194 @@ export const useOrdersStore = defineStore('orders', {
       setTimeout(() => {
         this.previewOrderId = null
       }, 300) // wait for animation
+    },
+
+    async fetchOrder(id: string) {
+      this.loadingOrder = true
+      this.orderError = null
+      
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Mock data
+        if (id === 'not-found') {
+          this.currentOrder = null
+          return
+        }
+
+        this.currentOrder = {
+          id,
+          orderNumber: `#EDX-${Math.floor(Math.random() * 10000) + 10000}`,
+          customer: {
+            id: 'c1',
+            name: 'أحمد محمد',
+            email: 'ahmed@example.com',
+            phone: '01012345678',
+            avatar: '',
+            previousOrdersCount: 12,
+            createdAt: '2025-01-15'
+          },
+          items: [
+            {
+              id: 'i1',
+              name: 'هاتف Samsung Galaxy S24',
+              sku: 'SAM-S24-BLK',
+              image: 'https://placehold.co/100x100/1e293b/fff?text=S24',
+              variant: 'اللون: أسود | السعة: 256GB',
+              quantity: 1,
+              unitPrice: 2850,
+              total: 2850
+            },
+            {
+              id: 'i2',
+              name: 'سماعات لاسلكية',
+              sku: 'HEAD-001',
+              image: 'https://placehold.co/100x100/1e293b/fff?text=Headset',
+              variant: 'اللون: أسود',
+              quantity: 1,
+              unitPrice: 650,
+              total: 650
+            }
+          ],
+          pricing: {
+            subtotal: 3500,
+            discount: 350,
+            shipping: 100,
+            tax: 250,
+            total: 3500,
+            currency: 'ج.م'
+          },
+          payment: {
+            status: 'paid',
+            method: 'بطاقة بنكية',
+            transactionId: 'TXN-928381',
+            paidAt: '2026-09-26T10:24:00Z'
+          },
+          shipping: {
+            address: {
+              name: 'أحمد محمد',
+              street: 'شارع الجمهورية، برج النور، الدور 3',
+              city: 'المنصورة',
+              state: 'الدقهلية',
+              country: 'مصر'
+            },
+            method: 'الشحن القياسي',
+            trackingNumber: 'TRK-82938102',
+            estimatedDelivery: '2026-09-28T00:00:00Z'
+          },
+          status: 'processing',
+          timeline: [
+            { id: 't1', status: 'new', timestamp: '2026-09-26T10:24:00Z', icon: 'ph:check-circle', actor: 'النظام' },
+            { id: 't2', status: 'paid', timestamp: '2026-09-26T10:25:00Z', icon: 'ph:check-circle', actor: 'بوابة الدفع' },
+            { id: 't3', status: 'processing', timestamp: '2026-09-26T11:40:00Z', icon: 'ph:spinner', actor: 'أحمد مدير المتجر' }
+          ],
+          notes: [
+            {
+              id: 'n1',
+              authorName: 'أحمد محمد',
+              createdAt: '2026-09-26T11:30:00Z',
+              content: 'العميل طلب الاتصال قبل التوصيل.',
+              type: 'customer'
+            },
+            {
+              id: 'n2',
+              authorName: 'فريق المتجر',
+              createdAt: '2026-09-26T10:45:00Z',
+              content: 'تم تجهيز الطلب وسيتم شحنه خلال 24 ساعة.',
+              type: 'internal'
+            }
+          ],
+          invoice: {
+            id: 'inv1',
+            number: 'INV-10482',
+            url: '#'
+          },
+          source: 'Online Store',
+          updateCount: 5,
+          createdAt: '2026-09-26T10:24:00Z',
+          updatedAt: '2026-09-26T11:40:00Z'
+        }
+      } catch (err: any) {
+        this.orderError = err.message || 'تعذر تحميل بيانات الطلب'
+      } finally {
+        this.loadingOrder = false
+      }
+    },
+
+    async updateOrderStatus(id: string, newStatus: string) {
+      if (!this.currentOrder || this.currentOrder.id !== id) return
+      
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      this.currentOrder.status = newStatus as any
+      this.currentOrder.timeline.push({
+        id: `t${Date.now()}`,
+        status: newStatus,
+        timestamp: new Date().toISOString(),
+        actor: 'مدير المتجر',
+        icon: 'ph:check-circle'
+      })
+      this.currentOrder.updateCount = (this.currentOrder.updateCount || 0) + 1
+      this.currentOrder.updatedAt = new Date().toISOString()
+    },
+
+    async cancelOrder(id: string, reason: string) {
+      if (!this.currentOrder || this.currentOrder.id !== id) return
+      
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      this.currentOrder.status = 'cancelled'
+      this.currentOrder.timeline.push({
+        id: `t${Date.now()}`,
+        status: 'cancelled',
+        timestamp: new Date().toISOString(),
+        actor: 'مدير المتجر',
+        icon: 'ph:x-circle',
+        note: `سبب الإلغاء: ${reason}`
+      })
+    },
+
+    async addOrderNote(id: string, note: { content: string, type: 'internal' | 'customer' }) {
+      if (!this.currentOrder || this.currentOrder.id !== id) return
+      
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      if (!this.currentOrder.notes) {
+        this.currentOrder.notes = []
+      }
+      
+      this.currentOrder.notes.unshift({
+        id: `n${Date.now()}`,
+        authorName: 'أنت',
+        createdAt: new Date().toISOString(),
+        content: note.content,
+        type: note.type
+      })
+    },
+
+    async refundOrder(id: string, payload: any) {
+      // TODO: Connect to backend refund endpoint
+      console.log('Refund order', id, payload)
+      if (!this.currentOrder || this.currentOrder.id !== id) return
+      
+      await new Promise(resolve => setTimeout(resolve, 500))
+      this.currentOrder.status = 'refunded'
+      this.currentOrder.timeline.push({
+        id: `t${Date.now()}`,
+        status: 'refunded',
+        timestamp: new Date().toISOString(),
+        actor: 'مدير المتجر',
+        icon: 'ph:arrow-u-up-left'
+      })
+    },
+
+    async downloadInvoice(id: string) {
+      // TODO: Implement actual invoice download
+      console.log('Download invoice for', id)
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
 })
