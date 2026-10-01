@@ -133,7 +133,7 @@ const manageLinks = [
   { name: 'الصفحات', path: '/dashboard/pages', icon: 'ph:browser' },
   { name: 'إعدادات المتجر', path: '/dashboard/settings', icon: 'ph:storefront' },
   { name: 'الشحن', path: '/dashboard/shipping', icon: 'ph:truck' },
-  { name: 'طرق الدفع', path: '/dashboard/payments', icon: 'ph:credit-card' },
+  { name: 'طرق الدفع', path: '/dashboard/store/payments', icon: 'ph:credit-card' },
 ]
 
 const analyticsLinks = [
