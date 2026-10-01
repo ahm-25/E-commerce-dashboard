@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { toRaw } from 'vue'
 
 export interface OrderCustomer {
   id: string
@@ -118,6 +119,26 @@ export interface OrderDetails {
   updatedAt: string
 }
 
+// Summary row for the orders table
+const toListItem = (o: OrderDetails): Order => ({
+  id: o.id,
+  orderNumber: o.orderNumber,
+  customer: { id: o.customer.id, name: o.customer.name, email: o.customer.email, phone: o.customer.phone },
+  itemsCount: o.items.reduce((s, i) => s + i.quantity, 0),
+  previewItems: o.items.slice(0, 3).map(i => ({ id: i.id, name: i.name, image: i.image })),
+  subtotal: o.pricing.subtotal,
+  discount: o.pricing.discount,
+  shippingCost: o.pricing.shipping,
+  tax: o.pricing.tax,
+  total: o.pricing.total,
+  currency: o.pricing.currency,
+  paymentStatus: o.payment.status,
+  paymentMethod: o.payment.method,
+  status: o.status as Order['status'],
+  createdAt: new Date(o.createdAt).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }),
+  updatedAt: 'الآن'
+})
+
 export const useOrdersStore = defineStore('orders', {
   state: () => ({
     orders: [] as Order[],
@@ -147,7 +168,11 @@ export const useOrdersStore = defineStore('orders', {
     selectedOrders: [] as string[],
     
     previewOrderId: null as string | null,
-    isPreviewDrawerOpen: false
+    isPreviewDrawerOpen: false,
+
+    // Orders created from the dashboard. Kept apart so the mock fetches below don't overwrite them.
+    // TODO: Remove once orders come from the API
+    manualOrders: [] as OrderDetails[]
   }),
   
   getters: {
@@ -359,6 +384,7 @@ export const useOrdersStore = defineStore('orders', {
             updatedAt: 'منذ 3 أيام'
           }
         ]
+        this.orders.unshift(...this.manualOrders.map(toListItem))
       } catch (err: any) {
         this.error = err.message || 'تعذر تحميل الطلبات'
       } finally {
@@ -366,6 +392,25 @@ export const useOrdersStore = defineStore('orders', {
       }
     },
     
+    async createManualOrder(input: Omit<OrderDetails, 'id' | 'orderNumber' | 'timeline' | 'createdAt' | 'updatedAt'>) {
+      // TODO: Replace with actual API call; the server assigns the number and reserves stock
+      await new Promise(resolve => setTimeout(resolve, 800))
+
+      const now = new Date().toISOString()
+      const number = 10483 + this.manualOrders.length
+      const order: OrderDetails = {
+        ...input,
+        id: `manual-${number}`,
+        orderNumber: `#EDX-${number}`,
+        timeline: [{ id: 't1', status: input.status, timestamp: now, icon: 'ph:check-circle', actor: 'إنشاء يدوي من لوحة التحكم' }],
+        createdAt: now,
+        updatedAt: now
+      }
+      this.manualOrders.unshift(order)
+      this.orders.unshift(toListItem(order))
+      return order
+    },
+
     async deleteOrder(id: string) {
       this.orders = this.orders.filter(o => o.id !== id)
       this.selectedOrders = this.selectedOrders.filter(oid => oid !== id)
@@ -428,6 +473,12 @@ export const useOrdersStore = defineStore('orders', {
       
       try {
         await new Promise(resolve => setTimeout(resolve, 1000))
+
+        const manual = this.manualOrders.find(o => o.id === id)
+        if (manual) {
+          this.currentOrder = structuredClone(toRaw(manual))
+          return
+        }
         
         // Mock data
         if (id === 'not-found') {

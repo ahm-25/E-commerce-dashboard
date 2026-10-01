@@ -32,15 +32,15 @@ const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString(
 
 // TODO: Replace with the API (and a websocket/SSE stream for live updates)
 const seedNotifications = (): AppNotification[] => [
-  { id: 'n1', type: 'order', title: 'طلب جديد #EDX-10482', body: 'أحمد محمد طلب 3 منتجات بإجمالي 2,450 ج.م', link: '/dashboard/orders/1', createdAt: minutesAgo(4), read: false },
+  { id: 'n1', type: 'order', title: 'طلب جديد رقم EDX-10482', body: 'أحمد محمد طلب 3 منتجات بإجمالي 2,450 ج.م', link: '/dashboard/orders/1', createdAt: minutesAgo(4), read: false },
   { id: 'n2', type: 'stock', title: 'مخزون منخفض: ساعة ذكية', body: 'فاضل 8 قطع بس', link: '/dashboard/inventory', createdAt: minutesAgo(35), read: false },
   { id: 'n3', type: 'review', title: 'تقييم جديد بانتظار المراجعة', body: 'أحمد محمد قيّم Samsung Galaxy S24 Ultra بـ 5 نجوم', link: '/dashboard/reviews', createdAt: minutesAgo(80), read: false },
   { id: 'n4', type: 'payment', title: 'بوابة Paymob تحتاج إعداد', body: 'المحافظ الإلكترونية مش هتظهر للعملاء لحد ما تكمّل ربط المفاتيح', link: '/dashboard/store/payments', createdAt: minutesAgo(60 * 5), read: false },
   { id: 'n5', type: 'customer', title: 'عميل جديد', body: 'نور الدين ياسر سجّل في المتجر', link: '/dashboard/customers', createdAt: minutesAgo(60 * 9), read: true },
-  { id: 'n6', type: 'order', title: 'طلب ملغي #EDX-10475', body: 'العميل ألغى الطلب قبل الشحن', link: '/dashboard/orders', createdAt: minutesAgo(60 * 26), read: true },
+  { id: 'n6', type: 'order', title: 'طلب ملغي رقم EDX-10475', body: 'العميل ألغى الطلب قبل الشحن', link: '/dashboard/orders', createdAt: minutesAgo(60 * 26), read: true },
   { id: 'n7', type: 'stock', title: 'نفد المخزون: كيبورد ميكانيكي', body: 'المنتج اتخفى من المتجر تلقائياً', link: '/dashboard/inventory', createdAt: minutesAgo(60 * 30), read: true },
   { id: 'n8', type: 'system', title: 'تسجيل دخول من جهاز جديد', body: 'Safari على iPhone من القاهرة', link: '/dashboard/system-settings?tab=security', createdAt: minutesAgo(60 * 50), read: true },
-  { id: 'n9', type: 'order', title: 'طلب استرجاع #EDX-10460', body: 'العميل طلب استرجاع منتج واحد', link: '/dashboard/orders', createdAt: minutesAgo(60 * 24 * 4), read: true }
+  { id: 'n9', type: 'order', title: 'طلب استرجاع رقم EDX-10460', body: 'العميل طلب استرجاع منتج واحد', link: '/dashboard/orders', createdAt: minutesAgo(60 * 24 * 4), read: true }
 ]
 
 const defaultPreferences = (): Record<NotificationType, ChannelPreference> => ({
