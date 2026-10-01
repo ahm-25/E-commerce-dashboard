@@ -9,9 +9,15 @@
       أنشئ أقسامًا لتنظيم منتجات متجرك وتسهيل التصفح على العملاء.
     </p>
     
-    <NuxtLink to="/dashboard/categories/create" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
+    <NuxtLink v-if="canManage" to="/dashboard/categories/create" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
       <Icon name="ph:plus-bold" class="w-4 h-4" />
       إضافة قسم
     </NuxtLink>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
+
+const canManage = useCanManage('products')
+</script>

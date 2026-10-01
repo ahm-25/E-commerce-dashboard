@@ -19,6 +19,7 @@
         تصدير
       </button>
       <NuxtLink 
+        v-if="canManage"
         to="/dashboard/discounts/create" 
         class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
       >
@@ -30,10 +31,13 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useDiscountsStore } from '~/stores/discounts'
 const store = useDiscountsStore()
 
 const handleExport = async (type: 'current' | 'all', format: 'csv' | 'excel') => {
   await store.exportDiscounts(type, format)
 }
+
+const canManage = useCanManage('discounts')
 </script>

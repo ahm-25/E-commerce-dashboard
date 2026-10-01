@@ -7,7 +7,7 @@
     <div v-if="isOpen" 
       class="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-50 py-1"
     >
-      <NuxtLink :to="`/dashboard/store/pages/create?id=${page.id}`" class="w-full text-right px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+      <NuxtLink v-if="canManage" :to="`/dashboard/store/pages/create?id=${page.id}`" class="w-full text-right px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
         <Icon name="heroicons:pencil" class="w-4 h-4 text-gray-400" />
         تعديل
       </NuxtLink>
@@ -24,22 +24,22 @@
       
       <div class="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
 
-      <button v-if="page.status !== 'published'" @click="publishPage" class="w-full text-right px-4 py-2 text-sm text-green-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+      <button v-if="canManage && page.status !== 'published'" @click="publishPage" class="w-full text-right px-4 py-2 text-sm text-green-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
         <Icon name="heroicons:globe-alt" class="w-4 h-4" />
         نشر
       </button>
 
-      <button v-if="page.status === 'published'" @click="hidePage" class="w-full text-right px-4 py-2 text-sm text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+      <button v-if="canManage && page.status === 'published'" @click="hidePage" class="w-full text-right px-4 py-2 text-sm text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
         <Icon name="heroicons:eye-slash" class="w-4 h-4" />
         إخفاء
       </button>
 
-      <button @click="duplicatePage" class="w-full text-right px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+      <button v-if="canManage" @click="duplicatePage" class="w-full text-right px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
         <Icon name="heroicons:document-duplicate" class="w-4 h-4 text-gray-400" />
         نسخ الصفحة
       </button>
 
-      <button v-if="page.type !== 'system'" @click="deletePage" class="w-full text-right px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+      <button v-if="canManage && page.type !== 'system'" @click="deletePage" class="w-full text-right px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
         <Icon name="heroicons:trash" class="w-4 h-4" />
         حذف
       </button>
@@ -48,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useStorePagesStore } from '~/stores/storePages'
 
@@ -112,4 +113,6 @@ const deletePage = async () => {
     closeMenu()
   }
 }
+
+const canManage = useCanManage('storefront')
 </script>

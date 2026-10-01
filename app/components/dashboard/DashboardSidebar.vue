@@ -48,7 +48,7 @@
       </div>
 
       <!-- Section: المتجر -->
-      <div class="flex flex-col gap-1">
+      <div v-if="storeLinks.length" class="flex flex-col gap-1">
         <div v-if="!isCollapsed" class="text-[11px] font-bold text-gray-500 mb-2 px-2 uppercase tracking-wider">المتجر</div>
         <NuxtLink v-for="item in storeLinks" :key="item.path" :to="item.path" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors group relative" active-class="bg-primary !text-white">
           <Icon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
@@ -61,7 +61,7 @@
       </div>
 
       <!-- Section: إدارة المتجر -->
-      <div class="flex flex-col gap-1">
+      <div v-if="manageLinks.length" class="flex flex-col gap-1">
         <div v-if="!isCollapsed" class="text-[11px] font-bold text-gray-500 mb-2 px-2 uppercase tracking-wider">إدارة المتجر</div>
         <NuxtLink v-for="item in manageLinks" :key="item.path" :to="item.path" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors group relative" active-class="bg-primary !text-white">
           <Icon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
@@ -74,7 +74,7 @@
       </div>
       
       <!-- Section: التحليلات -->
-      <div class="flex flex-col gap-1">
+      <div v-if="analyticsLinks.length" class="flex flex-col gap-1">
         <div v-if="!isCollapsed" class="text-[11px] font-bold text-gray-500 mb-2 px-2 uppercase tracking-wider">التحليلات</div>
         <NuxtLink v-for="item in analyticsLinks" :key="item.path" :to="item.path" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors group relative" active-class="bg-primary !text-white">
           <Icon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
@@ -111,6 +111,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useAuthStore } from '~/stores/auth'
+import type { PermissionModule } from '~/stores/system'
+
 defineProps<{
   isCollapsed?: boolean
   isMobile?: boolean
@@ -118,28 +122,40 @@ defineProps<{
 
 defineEmits(['toggle', 'close'])
 
-const storeLinks = [
-  { name: 'المنتجات', path: '/dashboard/products', icon: 'ph:package' },
-  { name: 'المخزون', path: '/dashboard/inventory', icon: 'ph:stack' },
-  { name: 'الأقسام', path: '/dashboard/categories', icon: 'ph:folders' },
-  { name: 'الطلبات', path: '/dashboard/orders', icon: 'ph:shopping-cart' },
-  { name: 'العملاء', path: '/dashboard/customers', icon: 'ph:users' },
-  { name: 'العروض والخصومات', path: '/dashboard/discounts', icon: 'ph:ticket' },
-  { name: 'التقييمات', path: '/dashboard/reviews', icon: 'ph:star' },
-]
+interface SidebarLink {
+  name: string
+  path: string
+  icon: string
+  module?: PermissionModule
+}
 
-const manageLinks = [
-  { name: 'المظهر', path: '/dashboard/store/appearance', icon: 'ph:palette' },
-  { name: 'الصفحات', path: '/dashboard/store/pages', icon: 'ph:browser' },
-  { name: 'إعدادات المتجر', path: '/dashboard/store/settings', icon: 'ph:storefront' },
-  { name: 'الشحن', path: '/dashboard/store/shipping', icon: 'ph:truck' },
-  { name: 'طرق الدفع', path: '/dashboard/store/payments', icon: 'ph:credit-card' },
-]
+const auth = useAuthStore()
 
-const analyticsLinks = [
-  { name: 'التحليلات', path: '/dashboard/analytics', icon: 'ph:chart-line-up' },
-  { name: 'التقارير', path: '/dashboard/reports', icon: 'ph:file-text' },
-]
+// Links the signed-in user has no "view" permission for are hidden
+const visible = (links: SidebarLink[]) => links.filter(l => !l.module || auth.can(l.module))
+
+const storeLinks = computed(() => visible([
+  { name: 'المنتجات', path: '/dashboard/products', module: 'products', icon: 'ph:package' },
+  { name: 'المخزون', path: '/dashboard/inventory', module: 'products', icon: 'ph:stack' },
+  { name: 'الأقسام', path: '/dashboard/categories', module: 'products', icon: 'ph:folders' },
+  { name: 'الطلبات', path: '/dashboard/orders', module: 'orders', icon: 'ph:shopping-cart' },
+  { name: 'العملاء', path: '/dashboard/customers', module: 'customers', icon: 'ph:users' },
+  { name: 'العروض والخصومات', path: '/dashboard/discounts', module: 'discounts', icon: 'ph:ticket' },
+  { name: 'التقييمات', path: '/dashboard/reviews', module: 'reviews', icon: 'ph:star' },
+]))
+
+const manageLinks = computed(() => visible([
+  { name: 'المظهر', path: '/dashboard/store/appearance', module: 'storefront', icon: 'ph:palette' },
+  { name: 'الصفحات', path: '/dashboard/store/pages', module: 'storefront', icon: 'ph:browser' },
+  { name: 'إعدادات المتجر', path: '/dashboard/store/settings', module: 'storeSettings', icon: 'ph:storefront' },
+  { name: 'الشحن', path: '/dashboard/store/shipping', module: 'storeSettings', icon: 'ph:truck' },
+  { name: 'طرق الدفع', path: '/dashboard/store/payments', module: 'storeSettings', icon: 'ph:credit-card' },
+]))
+
+const analyticsLinks = computed(() => visible([
+  { name: 'التحليلات', path: '/dashboard/analytics', module: 'analytics', icon: 'ph:chart-line-up' },
+  { name: 'التقارير', path: '/dashboard/reports', module: 'analytics', icon: 'ph:file-text' },
+]))
 
 const systemLinks = [
   { name: 'الإشعارات', path: '/dashboard/notifications', icon: 'ph:bell' },

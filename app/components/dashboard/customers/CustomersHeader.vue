@@ -41,7 +41,7 @@
       </div>
       
       <button 
-        @click="store.openAddCustomer()"
+        v-if="canManage" @click="store.openAddCustomer()"
         class="bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors"
       >
         <Icon name="ph:plus-bold" class="w-4 h-4" />
@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCustomersStore } from '~/stores/customers'
 
@@ -78,4 +79,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const canManage = useCanManage('customers')
 </script>

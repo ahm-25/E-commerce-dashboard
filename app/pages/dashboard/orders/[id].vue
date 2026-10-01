@@ -67,6 +67,7 @@
           <!-- Sidebar -->
           <div class="w-full xl:w-[380px] shrink-0 space-y-6">
             <OrderStatusUpdate 
+              v-if="canManage"
               :order="order"
               :isUpdating="isUpdatingStatus"
               @update-status="handleUpdateStatus"
@@ -178,6 +179,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useOrdersStore } from '~/stores/orders'
@@ -279,6 +281,8 @@ const printInvoice = () => {
 const printOrder = () => {
   window.print()
 }
+
+const canManage = useCanManage('orders')
 </script>
 
 <style>

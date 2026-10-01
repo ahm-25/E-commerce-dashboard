@@ -13,7 +13,7 @@
           <p class="text-sm text-muted mt-1">المناطق التي توصّل لها، وأسعار الشحن، وشركات الشحن.</p>
         </div>
         <button
-          v-if="currentTab === 'zones' && !store.loading && !store.error"
+          v-if="canManage && currentTab === 'zones' && !store.loading && !store.error"
           @click="store.openZoneDialog()"
           class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
@@ -58,6 +58,9 @@
           </button>
         </div>
 
+        <ReadOnlyNotice v-if="!canManage" />
+
+        <fieldset :disabled="!canManage" class="min-w-0">
         <!-- Zones Tab -->
         <div v-if="currentTab === 'zones'" class="flex flex-col gap-4">
           <div
@@ -95,6 +98,7 @@
 
         <!-- Settings Tab -->
         <ShippingGeneralSettings v-else-if="currentTab === 'settings'" />
+        </fieldset>
       </template>
     </div>
 
@@ -103,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted } from 'vue'
 import { useShippingStore } from '~/stores/shipping'
 import ShippingStats from '~/components/dashboard/store/shipping/ShippingStats.vue'
@@ -110,6 +115,7 @@ import ShippingZoneCard from '~/components/dashboard/store/shipping/ShippingZone
 import ShippingZoneDialog from '~/components/dashboard/store/shipping/ShippingZoneDialog.vue'
 import ShippingCarriers from '~/components/dashboard/store/shipping/ShippingCarriers.vue'
 import ShippingGeneralSettings from '~/components/dashboard/store/shipping/ShippingGeneralSettings.vue'
+import ReadOnlyNotice from '~/components/dashboard/ReadOnlyNotice.vue'
 
 const store = useShippingStore()
 
@@ -128,4 +134,6 @@ useHead({
 onMounted(() => {
   if (!store.loaded) store.fetchShipping()
 })
+
+const canManage = useCanManage('storeSettings')
 </script>

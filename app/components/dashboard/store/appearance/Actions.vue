@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap items-center gap-2">
+  <div v-if="canManage" class="flex flex-wrap items-center gap-2">
     <button 
       @click="showResetDialog = true"
       class="px-4 py-2 text-sm font-medium text-primary-navy dark:text-gray-100 bg-surface dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg hover:bg-bg dark:hover:bg-bg-dark focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors inline-flex items-center gap-1.5"
@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref } from 'vue'
 import { useStoreAppearance } from '~/composables/useStoreAppearance'
 
@@ -62,4 +63,6 @@ const handleReset = () => {
   resetToDefault()
   showResetDialog.value = false
 }
+
+const canManage = useCanManage('storefront')
 </script>

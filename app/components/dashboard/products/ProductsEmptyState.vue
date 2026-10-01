@@ -8,7 +8,7 @@
     <p class="text-muted font-medium mb-8 max-w-sm">ابدأ بإضافة أول منتج إلى متجرك لعرضه للعملاء.</p>
     
     <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-      <NuxtLink to="/dashboard/products/create" class="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm">
+      <NuxtLink v-if="canManage" to="/dashboard/products/create" class="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm">
         <Icon name="ph:plus-bold" class="w-4 h-4" />
         إضافة منتج
       </NuxtLink>
@@ -21,4 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
+
+const canManage = useCanManage('products')
 </script>

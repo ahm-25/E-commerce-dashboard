@@ -8,7 +8,7 @@
       عندما يبدأ العملاء بالتسجيل أو إجراء الطلبات، ستظهر بياناتهم هنا. يمكنك أيضاً إضافة عميل يدوياً.
     </p>
     <button 
-      @click="store.openAddCustomer()"
+      v-if="canManage" @click="store.openAddCustomer()"
       class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm shadow-primary/20"
     >
       <Icon name="ph:plus-bold" class="w-5 h-5" />
@@ -18,7 +18,10 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useCustomersStore } from '~/stores/customers'
 
 const store = useCustomersStore()
+
+const canManage = useCanManage('customers')
 </script>

@@ -26,7 +26,7 @@
               <Icon name="ph:arrow-square-out-bold" class="w-4 h-4" />
             </NuxtLink>
             <button
-              @click="store.openEditCustomer(customer)"
+              v-if="canManage" @click="store.openEditCustomer(customer)"
               class="w-8 h-8 rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-center text-muted hover:text-primary transition-colors shadow-sm"
               title="تعديل العميل"
             >
@@ -155,6 +155,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useCustomersStore } from '~/stores/customers'
 import CustomerStatusBadge from '~/components/dashboard/customers/CustomerStatusBadge.vue'
@@ -177,4 +178,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyDown)
 })
+
+const canManage = useCanManage('customers')
 </script>

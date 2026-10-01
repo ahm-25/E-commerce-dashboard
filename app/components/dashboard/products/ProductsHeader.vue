@@ -11,7 +11,7 @@
     </div>
     
     <div class="flex items-center gap-3">
-      <NuxtLink to="/dashboard/products/create" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
+      <NuxtLink v-if="canManage" to="/dashboard/products/create" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
         <Icon name="ph:plus-bold" class="w-4 h-4" />
         إضافة منتج
       </NuxtLink>
@@ -20,4 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
+
+const canManage = useCanManage('products')
 </script>

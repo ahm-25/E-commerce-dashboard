@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary/5 border-y border-primary/20 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+  <div v-if="canManage" class="bg-primary/5 border-y border-primary/20 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
       <div class="text-primary font-medium text-sm">
         تم تحديد {{ store.selectedReviews.length }} تقييم
@@ -39,7 +39,10 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useReviewsStore } from '~/stores/reviews'
 
 const store = useReviewsStore()
+
+const canManage = useCanManage('reviews')
 </script>

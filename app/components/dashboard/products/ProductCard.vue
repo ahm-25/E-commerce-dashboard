@@ -38,15 +38,15 @@
           
           <div class="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-20 overflow-hidden">
             <div class="p-1 flex flex-col">
-              <button class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <NuxtLink v-if="canManage" :to="`/dashboard/products/${product.id}/edit`" class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <Icon name="ph:pencil-simple" class="w-4 h-4 text-muted" />
                 تعديل
-              </button>
+              </NuxtLink>
               <button class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" @click="openPreview">
                 <Icon name="ph:eye" class="w-4 h-4 text-muted" />
                 عرض المنتج
               </button>
-              <button @click="confirmDelete" class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-danger hover:bg-danger/10 transition-colors">
+              <button v-if="canManage" @click="confirmDelete" class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-danger hover:bg-danger/10 transition-colors">
                 <Icon name="ph:trash" class="w-4 h-4" />
                 حذف
               </button>
@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import type { Product } from '~/stores/products'
 import { useProductsStore } from '~/stores/products'
 
@@ -126,4 +127,6 @@ const confirmDelete = () => {
   const event = new CustomEvent('open-delete-dialog', { detail: props.product })
   window.dispatchEvent(event)
 }
+
+const canManage = useCanManage('products')
 </script>

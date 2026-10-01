@@ -55,7 +55,7 @@
 
           <div class="flex gap-2">
             <button
-              @click="customersStore.openEditCustomer(customer)"
+              v-if="canManage" @click="customersStore.openEditCustomer(customer)"
               class="flex-1 bg-gray-50 dark:bg-gray-800 text-primary-navy dark:text-white border border-border-light dark:border-border-dark rounded-xl py-2.5 font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <Icon name="ph:pencil-simple-bold" class="w-4 h-4" />
@@ -184,6 +184,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { computed, onMounted } from 'vue'
 import { useCustomersStore } from '~/stores/customers'
 import { useOrdersStore } from '~/stores/orders'
@@ -215,7 +216,7 @@ const customerReviews = computed(() =>
 )
 
 const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })
+  new Date(date).toLocaleDateString('ar-EG-u-nu-latn', { year: 'numeric', month: 'short', day: 'numeric' })
 
 const contactFields = computed(() => {
   if (!customer.value) return []
@@ -253,4 +254,6 @@ useHead({
 onMounted(() => {
   loadData()
 })
+
+const canManage = useCanManage('customers')
 </script>

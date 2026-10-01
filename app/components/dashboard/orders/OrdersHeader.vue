@@ -40,7 +40,7 @@
         </div>
       </div>
 
-      <NuxtLink to="/dashboard/orders/create" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
+      <NuxtLink v-if="canManage" to="/dashboard/orders/create" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm">
         <Icon name="ph:plus-bold" class="w-4 h-4" />
         إنشاء طلب
       </NuxtLink>
@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isExportOpen = ref(false)
@@ -73,4 +74,6 @@ const handleExport = (type: string) => {
   console.log(`Exporting ${type}`)
   isExportOpen.value = false
 }
+
+const canManage = useCanManage('orders')
 </script>

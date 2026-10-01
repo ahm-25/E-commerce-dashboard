@@ -7,9 +7,15 @@
     <p class="text-sm text-text-muted dark:text-text-muted-dark max-w-sm mb-6">
       أنشئ أول خصم أو كوبون لبدء تقديم عروض لعملائك.
     </p>
-    <NuxtLink to="/dashboard/discounts/create" class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
+    <NuxtLink v-if="canManage" to="/dashboard/discounts/create" class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
       <Icon name="ph:plus-bold" class="w-4 h-4" />
       إنشاء خصم
     </NuxtLink>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
+
+const canManage = useCanManage('discounts')
+</script>

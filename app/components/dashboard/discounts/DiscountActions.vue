@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-end gap-2">
+  <div v-if="canManage" class="flex items-center justify-end gap-2">
     <button @click="router.push(`/dashboard/discounts/${discount.id}/edit`)" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="تعديل">
       <Icon name="ph:pencil-simple" class="w-4 h-4" />
     </button>
@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useRouter } from 'vue-router'
 import { useDiscountsStore, type Discount } from '~/stores/discounts'
 
@@ -25,4 +26,6 @@ const props = defineProps<{
 
 const store = useDiscountsStore()
 const router = useRouter()
+
+const canManage = useCanManage('discounts')
 </script>

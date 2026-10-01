@@ -83,7 +83,7 @@
           عرض
         </button>
         <button 
-          @click="store.openReplyDialog(review)"
+          v-if="canManage" @click="store.openReplyDialog(review)"
           class="btn btn-sm btn-primary"
         >
           الرد
@@ -94,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { computed } from 'vue'
 import type { PropType } from 'vue'
 import { useReviewsStore } from '~/stores/reviews'
@@ -122,4 +123,6 @@ const formatDate = (dateString: string) => {
     year: 'numeric'
   }).format(date)
 }
+
+const canManage = useCanManage('reviews')
 </script>

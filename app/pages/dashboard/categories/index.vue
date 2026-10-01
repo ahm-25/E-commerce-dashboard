@@ -53,11 +53,11 @@
               نظّم أقسام متجرك لتحسين تجربة التصفح وتسهيل وصول العملاء للمنتجات.
             </p>
             <div class="flex flex-col gap-3">
-                            <NuxtLink to="/dashboard/categories/create" class="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
+                            <NuxtLink v-if="canManage" to="/dashboard/categories/create" class="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
                 <Icon name="ph:plus-bold" class="w-4 h-4" />
                 إضافة قسم
               </NuxtLink>
-                            <button class="w-full inline-flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
+                            <button v-if="canManage" class="w-full inline-flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
                 <Icon name="ph:arrows-down-up" class="w-4 h-4" />
                 إعادة ترتيب الأقسام
               </button>
@@ -76,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useCategoriesStore } from '~/stores/categories'
 import CategoriesHeader from '~/components/dashboard/categories/CategoriesHeader.vue'
 import CategoriesStats from '~/components/dashboard/categories/CategoriesStats.vue'
@@ -99,4 +100,6 @@ useHead({
 onMounted(() => {
   store.fetchCategories()
 })
+
+const canManage = useCanManage('products')
 </script>

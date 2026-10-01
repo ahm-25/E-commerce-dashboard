@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary/5 dark:bg-primary/10 border-b border-border-light dark:border-border-dark px-4 py-3 flex items-center justify-between">
+  <div v-if="canManage" class="bg-primary/5 dark:bg-primary/10 border-b border-border-light dark:border-border-dark px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="text-sm font-bold text-primary">
         تم تحديد {{ store.selectedDiscounts.length }} خصم
@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref } from 'vue'
 import { useDiscountsStore } from '~/stores/discounts'
 
@@ -84,4 +85,6 @@ const confirmDelete = async () => {
   deleting.value = false
   isBulkDeleteDialogOpen.value = false
 }
+
+const canManage = useCanManage('discounts')
 </script>

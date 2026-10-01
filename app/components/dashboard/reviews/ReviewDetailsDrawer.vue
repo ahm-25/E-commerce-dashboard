@@ -148,7 +148,7 @@
         </div>
 
         <!-- Footer Actions -->
-        <div class="p-4 border-t border-border-light dark:border-border-dark bg-surface-alt dark:bg-surface-dark-alt flex flex-wrap gap-3">
+        <div v-if="canManage" class="p-4 border-t border-border-light dark:border-border-dark bg-surface-alt dark:bg-surface-dark-alt flex flex-wrap gap-3">
           <template v-if="review.status === 'pending'">
             <button @click="approveReview" class="btn btn-primary flex-1">اعتماد</button>
             <button @click="rejectReview" class="btn btn-danger flex-1">رفض</button>
@@ -175,6 +175,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { computed } from 'vue'
 import { useReviewsStore } from '~/stores/reviews'
 import ReviewStatusBadge from './ReviewStatusBadge.vue'
@@ -217,4 +218,6 @@ const replyReview = () => {
     store.openReplyDialog(review.value)
   }
 }
+
+const canManage = useCanManage('reviews')
 </script>

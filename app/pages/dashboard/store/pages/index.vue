@@ -16,7 +16,7 @@
           <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-surface-dark dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors shadow-sm">
             معاينة المتجر
           </button>
-          <NuxtLink to="/dashboard/store/pages/create" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
+          <NuxtLink v-if="canManage" to="/dashboard/store/pages/create" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
             <Icon name="heroicons:plus" class="w-4 h-4" />
             إضافة صفحة
           </NuxtLink>
@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useStorePages } from '~/composables/useStorePages'
 import DashboardStorePagesStorePagesStats from '~/components/dashboard/store/pages/StorePagesStats.vue'
 import DashboardStorePagesStorePagesToolbar from '~/components/dashboard/store/pages/StorePagesToolbar.vue'
@@ -50,4 +51,6 @@ import DashboardStorePagesStorePagesTable from '~/components/dashboard/store/pag
 
 // Initialize logic
 useStorePages()
+
+const canManage = useCanManage('storefront')
 </script>

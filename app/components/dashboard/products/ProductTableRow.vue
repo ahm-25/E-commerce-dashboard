@@ -58,21 +58,21 @@
         <button class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-primary/10 transition-colors" title="عرض" @click="openPreview">
           <Icon name="ph:eye-bold" class="w-4 h-4" />
         </button>
-        <button class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-primary/10 transition-colors" title="تعديل">
+        <NuxtLink v-if="canManage" :to="`/dashboard/products/${product.id}/edit`" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-primary/10 transition-colors" title="تعديل">
           <Icon name="ph:pencil-simple-bold" class="w-4 h-4" />
-        </button>
+        </NuxtLink>
         
-        <div class="relative group">
+        <div v-if="canManage" class="relative group">
           <button class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary-navy dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
             <Icon name="ph:dots-three-vertical-bold" class="w-4 h-4" />
           </button>
           
           <div class="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 overflow-hidden">
             <div class="p-1 flex flex-col">
-              <button class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <NuxtLink :to="`/dashboard/products/${product.id}/edit`" class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <Icon name="ph:pencil-simple" class="w-4 h-4 text-muted" />
                 تعديل
-              </button>
+              </NuxtLink>
               <button class="flex items-center gap-2 text-right px-3 py-2 rounded-lg text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" @click="openPreview">
                 <Icon name="ph:eye" class="w-4 h-4 text-muted" />
                 عرض المنتج
@@ -99,6 +99,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import type { Product } from '~/stores/products'
 import { useProductsStore } from '~/stores/products'
 
@@ -158,4 +159,6 @@ const confirmDelete = () => {
   const event = new CustomEvent('open-delete-dialog', { detail: props.product })
   window.dispatchEvent(event)
 }
+
+const canManage = useCanManage('products')
 </script>

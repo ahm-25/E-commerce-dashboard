@@ -26,7 +26,7 @@
       </button>
 
       <button 
-        v-if="!review.reply"
+        v-if="canManage && !review.reply"
         @click="openReply"
         class="w-full text-right px-4 py-2 text-sm text-primary hover:bg-surface-alt dark:hover:bg-surface-dark flex items-center gap-2"
       >
@@ -37,7 +37,7 @@
       </button>
 
       <button 
-        v-else
+        v-else-if="canManage"
         @click="openReply"
         class="w-full text-right px-4 py-2 text-sm text-primary hover:bg-surface-alt dark:hover:bg-surface-dark flex items-center gap-2"
       >
@@ -50,7 +50,7 @@
       <div class="h-px bg-border-light dark:bg-border-dark my-1"></div>
       
       <button 
-        v-if="review.status !== 'approved'"
+        v-if="canManage && review.status !== 'approved'"
         @click="openApprove"
         class="w-full text-right px-4 py-2 text-sm text-success hover:bg-surface-alt dark:hover:bg-surface-dark flex items-center gap-2"
       >
@@ -61,7 +61,7 @@
       </button>
 
       <button 
-        v-if="review.status !== 'hidden'"
+        v-if="canManage && review.status !== 'hidden'"
         @click="openHide"
         class="w-full text-right px-4 py-2 text-sm text-text-regular dark:text-text-regular-dark hover:bg-surface-alt dark:hover:bg-surface-dark flex items-center gap-2"
       >
@@ -72,7 +72,7 @@
       </button>
 
       <button 
-        v-if="review.status !== 'rejected'"
+        v-if="canManage && review.status !== 'rejected'"
         @click="openReject"
         class="w-full text-right px-4 py-2 text-sm text-danger hover:bg-surface-alt dark:hover:bg-surface-dark flex items-center gap-2"
       >
@@ -108,6 +108,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref } from 'vue'
 import type { PropType } from 'vue'
 import type { Review } from '~/stores/reviews'
@@ -159,4 +160,6 @@ const openReject = () => {
   store.openRejectDialog(props.review)
   closeMenu()
 }
+
+const canManage = useCanManage('reviews')
 </script>

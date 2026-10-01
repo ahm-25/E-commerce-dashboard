@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary/5 border-b border-primary/10 px-4 py-3 flex items-center justify-between gap-4 sticky top-0 z-10 backdrop-blur-sm">
+  <div v-if="canManage" class="bg-primary/5 border-b border-primary/10 px-4 py-3 flex items-center justify-between gap-4 sticky top-0 z-10 backdrop-blur-sm">
     <div class="flex items-center gap-3">
       <span class="text-sm font-bold text-primary-navy dark:text-white">
         تم تحديد {{ store.selectedProducts.length }} {{ store.selectedProducts.length === 1 ? 'منتج' : 'منتجات' }}
@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useProductsStore } from '~/stores/products'
 
 const store = useProductsStore()
@@ -39,4 +40,6 @@ const confirmBulkDelete = () => {
   const event = new CustomEvent('open-bulk-delete-dialog')
   window.dispatchEvent(event)
 }
+
+const canManage = useCanManage('products')
 </script>

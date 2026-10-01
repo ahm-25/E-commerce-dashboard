@@ -20,9 +20,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <!-- Settings Panel -->
-          <div class="lg:col-span-5 xl:col-span-4 min-w-0">
+          <fieldset :disabled="!canManage" class="lg:col-span-5 xl:col-span-4 min-w-0 flex flex-col gap-4">
+            <ReadOnlyNotice v-if="!canManage" />
             <DashboardStoreAppearanceSettings />
-          </div>
+          </fieldset>
 
           <!-- Live Preview (sticky on desktop) -->
           <div class="lg:col-span-7 xl:col-span-8 min-w-0 lg:sticky lg:top-8 h-[70vh] lg:h-[calc(100vh-72px-4rem)]">
@@ -43,8 +44,10 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted } from 'vue'
 import { useStoreAppearance } from '~/composables/useStoreAppearance'
+import ReadOnlyNotice from '~/components/dashboard/ReadOnlyNotice.vue'
 
 const { fetchAppearance, isLoading, hasUnsavedChanges, saveDraft, draftAppearance } = useStoreAppearance()
 const showUnsavedDialog = ref(false)
@@ -80,6 +83,8 @@ const handleUnsavedDiscard = () => {
     router.push(pendingRoute)
   }
 }
+
+const canManage = useCanManage('storefront')
 </script>
 
 <style scoped>

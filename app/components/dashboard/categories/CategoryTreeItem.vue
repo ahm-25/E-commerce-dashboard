@@ -51,7 +51,7 @@
       {{ category.updatedAt }}
     </td>
     <td class="py-3 px-4 text-center">
-      <div ref="menuRef" class="relative inline-block">
+      <div v-if="canManage" ref="menuRef" class="relative inline-block">
         <button @click="toggleMenu" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-muted transition-colors mx-auto">
           <Icon name="ph:dots-three-outline-vertical-fill" class="w-4 h-4" />
         </button>
@@ -101,6 +101,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCategoriesStore, type Category } from '~/stores/categories'
 
@@ -160,4 +161,6 @@ const toggleVisibility = () => {
 const confirmDelete = () => {
   store.categoryToDelete = props.category
 }
+
+const canManage = useCanManage('products')
 </script>

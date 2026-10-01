@@ -92,7 +92,7 @@
               <Icon name="ph:user-bold" class="w-4 h-4 text-muted" />
               عرض العميل
             </button>
-            <button @click="store.openEditCustomer(customer); isDropdownOpen = false" class="w-full text-right px-4 py-2 text-sm text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">
+            <button v-if="canManage" @click="store.openEditCustomer(customer); isDropdownOpen = false" class="w-full text-right px-4 py-2 text-sm text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">
               <Icon name="ph:pencil-simple-bold" class="w-4 h-4 text-muted" />
               تعديل البيانات
             </button>
@@ -109,8 +109,8 @@
               <Icon name="ph:phone-bold" class="w-4 h-4 text-muted" />
               نسخ الهاتف
             </button>
-            <div class="h-px bg-border-light dark:bg-border-dark my-1"></div>
-            <button class="w-full text-right px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2">
+            <div v-if="canManage" class="h-px bg-border-light dark:bg-border-dark my-1"></div>
+            <button v-if="canManage" class="w-full text-right px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2">
               <Icon name="ph:prohibit-bold" class="w-4 h-4" />
               حظر العميل
             </button>
@@ -122,6 +122,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCustomersStore, type Customer } from '~/stores/customers'
 import CustomerStatusBadge from '~/components/dashboard/customers/CustomerStatusBadge.vue'
@@ -157,4 +158,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const canManage = useCanManage('customers')
 </script>

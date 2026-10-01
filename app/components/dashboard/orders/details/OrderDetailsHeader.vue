@@ -38,11 +38,11 @@
             طباعة الطلب
           </button>
           <div class="h-px bg-border-light dark:bg-border-dark my-1"></div>
-          <button @click="$emit('cancel-order')" class="w-full text-right px-4 py-2 text-sm text-danger hover:bg-danger/5 flex items-center gap-2">
+          <button v-if="canManage" @click="$emit('cancel-order')" class="w-full text-right px-4 py-2 text-sm text-danger hover:bg-danger/5 flex items-center gap-2">
             <Icon name="ph:x-circle" class="w-4 h-4" />
             إلغاء الطلب
           </button>
-          <button @click="$emit('refund-order')" class="w-full text-right px-4 py-2 text-sm text-text hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">
+          <button v-if="canManage" @click="$emit('refund-order')" class="w-full text-right px-4 py-2 text-sm text-text hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">
             <Icon name="ph:arrows-counter-clockwise" class="w-4 h-4" />
             إنشاء استرجاع
           </button>
@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted, onUnmounted } from 'vue'
 import OrderStatusBadge from '../OrderStatusBadge.vue'
 
@@ -79,4 +80,6 @@ const closeDropdown = (e: MouseEvent) => {
 
 onMounted(() => document.addEventListener('click', closeDropdown))
 onUnmounted(() => document.removeEventListener('click', closeDropdown))
+
+const canManage = useCanManage('orders')
 </script>

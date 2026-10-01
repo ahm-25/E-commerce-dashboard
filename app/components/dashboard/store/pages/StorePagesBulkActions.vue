@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selectedPages.length > 0" class="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/50 p-3 flex items-center justify-between transition-all">
+  <div v-if="canManage && selectedPages.length > 0" class="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/50 p-3 flex items-center justify-between transition-all">
     <div class="flex items-center gap-3">
       <span class="text-sm font-medium text-blue-700 dark:text-blue-400">
         تم تحديد {{ selectedPages.length }} صفحات
@@ -23,7 +23,10 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useStorePages } from '~/composables/useStorePages'
 
 const { selectedPages, bulkPublish, bulkHide, bulkDelete } = useStorePages()
+
+const canManage = useCanManage('storefront')
 </script>

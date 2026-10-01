@@ -51,7 +51,7 @@
                 <button v-if="hasActiveFilters || searchQuery" @click="clearSearchAndFilters" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-surface-dark dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors">
                   مسح الفلاتر والبحث
                 </button>
-                <NuxtLink v-else to="/dashboard/store/pages/create" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+                <NuxtLink v-else-if="canManage" to="/dashboard/store/pages/create" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
                   + إضافة صفحة
                 </NuxtLink>
               </div>
@@ -124,6 +124,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useStorePages } from '~/composables/useStorePages'
 
 const { 
@@ -171,4 +172,6 @@ const copySlug = (slug: string) => {
   navigator.clipboard.writeText(`/${slug}`)
   alert('تم نسخ الرابط: /' + slug)
 }
+
+const canManage = useCanManage('storefront')
 </script>

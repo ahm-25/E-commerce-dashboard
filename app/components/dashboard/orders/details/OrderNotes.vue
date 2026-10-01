@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <button @click="$emit('add-note')" class="w-full py-2.5 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors flex items-center justify-center gap-2 shadow-sm mt-auto shrink-0">
+    <button v-if="canManage" @click="$emit('add-note')" class="w-full py-2.5 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors flex items-center justify-center gap-2 shadow-sm mt-auto shrink-0">
       <Icon name="ph:plus" class="w-5 h-5" />
       إضافة ملاحظة
     </button>
@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 const props = defineProps<{
   order: any
 }>()
@@ -61,4 +62,6 @@ const formatDate = (dateStr: string) => {
     return dateStr
   }
 }
+
+const canManage = useCanManage('orders')
 </script>

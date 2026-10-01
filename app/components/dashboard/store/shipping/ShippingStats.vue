@@ -19,8 +19,8 @@ import { useShippingStore, EGYPT_GOVERNORATES } from '~/stores/shipping'
 const store = useShippingStore()
 
 const stats = computed(() => [
-  { label: 'مناطق الشحن المفعّلة', value: `${store.activeZonesCount} / ${store.zones.length}`, icon: 'ph:map-trifold-bold', iconClass: 'bg-primary/10 text-primary' },
-  { label: 'المحافظات المغطاة', value: `${store.coveredRegions.size} / ${EGYPT_GOVERNORATES.length}`, icon: 'ph:map-pin-bold', iconClass: 'bg-success/10 text-success' },
+  { label: 'مناطق الشحن المفعّلة', value: `${store.activeZonesCount} من ${store.zones.length}`, icon: 'ph:map-trifold-bold', iconClass: 'bg-primary/10 text-primary' },
+  { label: 'المحافظات المغطاة', value: `${store.coveredRegions.size} من ${EGYPT_GOVERNORATES.length}`, icon: 'ph:map-pin-bold', iconClass: 'bg-success/10 text-success' },
   { label: 'شركات الشحن المتصلة', value: store.connectedCarriersCount, icon: 'ph:truck-bold', iconClass: 'bg-primary/10 text-primary' },
   { label: 'محافظات بدون شحن', value: store.uncoveredRegions.length, icon: 'ph:warning-bold', iconClass: 'bg-warning/10 text-warning' }
 ])

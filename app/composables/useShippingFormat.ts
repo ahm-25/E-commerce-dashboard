@@ -6,10 +6,14 @@ const CURRENCY = 'ج.م'
 export const formatRatePrice = (rate: ShippingRate) => {
   if (rate.type === 'free') return 'مجاني'
   if (rate.type === 'weight') {
-    return `${rate.price} ${CURRENCY} حتى ${rate.includedKg ?? 0} كجم + ${rate.pricePerKg ?? 0} ${CURRENCY}/كجم`
+    return `${rate.price.toLocaleString()} ${CURRENCY} لأول ${rate.includedKg ?? 0} كجم`
   }
   return `${rate.price.toLocaleString()} ${CURRENCY}`
 }
+
+// Second line for weight-based rates
+export const formatExtraWeight = (rate: ShippingRate) =>
+  rate.type === 'weight' ? `+ ${rate.pricePerKg ?? 0} ${CURRENCY} لكل كجم إضافي` : ''
 
 export const formatDeliveryTime = (rate: ShippingRate) => {
   if (rate.maxDays === 0) return 'نفس اليوم'

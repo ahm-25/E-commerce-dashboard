@@ -46,13 +46,15 @@
           </a>
         </nav>
 
-        <div class="lg:col-span-3 flex flex-col gap-6">
+        <!-- A disabled fieldset disables every control inside it -->
+        <fieldset :disabled="!canManage" class="lg:col-span-3 flex flex-col gap-6 min-w-0">
+          <ReadOnlyNotice v-if="!canManage" />
           <StoreInfoSection v-model="form" />
           <LocaleSection v-model="form" :initial-currency="store.settings?.currency" />
           <TaxSection v-model="form" />
           <CheckoutSection v-model="form" />
           <StoreStatusSection v-model="form" />
-        </div>
+        </fieldset>
       </div>
 
       <!-- Save Bar (sticky inside the scrolling main area, so it follows the sidebar width) -->
@@ -97,6 +99,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, computed, onMounted, toRaw } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useStoreSettingsStore, type StoreSettings } from '~/stores/storeSettings'
@@ -105,6 +108,7 @@ import LocaleSection from '~/components/dashboard/store/settings/LocaleSection.v
 import TaxSection from '~/components/dashboard/store/settings/TaxSection.vue'
 import CheckoutSection from '~/components/dashboard/store/settings/CheckoutSection.vue'
 import StoreStatusSection from '~/components/dashboard/store/settings/StoreStatusSection.vue'
+import ReadOnlyNotice from '~/components/dashboard/ReadOnlyNotice.vue'
 
 const store = useStoreSettingsStore()
 
@@ -180,4 +184,6 @@ onMounted(() => {
   if (store.settings) resetForm()
   else load()
 })
+
+const canManage = useCanManage('storeSettings')
 </script>

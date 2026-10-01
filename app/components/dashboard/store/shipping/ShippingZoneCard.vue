@@ -64,6 +64,7 @@
         </div>
         <div class="text-left shrink-0">
           <div class="text-sm font-black text-primary-navy dark:text-white">{{ formatRatePrice(rate) }}</div>
+          <div v-if="rate.type === 'weight'" class="text-xs text-muted mt-0.5">{{ formatExtraWeight(rate) }}</div>
           <div v-if="rate.freeAbove" class="text-xs text-success font-bold mt-0.5">مجاني فوق {{ rate.freeAbove.toLocaleString() }} ج.م</div>
         </div>
       </div>
@@ -78,7 +79,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useShippingStore, type ShippingZone } from '~/stores/shipping'
-import { formatRatePrice, formatDeliveryTime } from '~/composables/useShippingFormat'
+import { formatRatePrice, formatExtraWeight, formatDeliveryTime } from '~/composables/useShippingFormat'
 import ToggleSwitch from '~/components/dashboard/ToggleSwitch.vue'
 
 const props = defineProps<{

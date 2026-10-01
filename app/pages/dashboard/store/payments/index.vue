@@ -11,11 +11,11 @@
         </div>
         <div class="flex items-center gap-3">
           <!-- CTA based on current tab -->
-          <button v-if="currentTab === 'methods'" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-sm">
+          <button v-if="canManage && currentTab === 'methods'" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-sm">
             <Icon name="heroicons:plus" class="w-4 h-4" />
             إضافة طريقة دفع
           </button>
-          <button v-if="currentTab === 'gateways'" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-sm">
+          <button v-if="canManage && currentTab === 'gateways'" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-sm">
             <Icon name="heroicons:plus" class="w-4 h-4" />
             إضافة بوابة دفع
           </button>
@@ -51,8 +51,10 @@
           </button>
         </div>
 
-        <!-- Tab Content -->
-        <div>
+        <ReadOnlyNotice v-if="!canManage" />
+
+        <!-- Tab Content (a disabled fieldset disables every control inside it) -->
+        <fieldset :disabled="!canManage" class="min-w-0">
           <!-- Methods Tab -->
           <div v-if="currentTab === 'methods'" class="animate-fade-in">
             <DashboardStorePaymentsPaymentMethodsTable />
@@ -67,7 +69,7 @@
           <div v-if="currentTab === 'settings'" class="animate-fade-in">
             <DashboardStorePaymentsPaymentGeneralSettings />
           </div>
-        </div>
+        </fieldset>
 
       </div>
     </div>
@@ -75,15 +77,19 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref } from 'vue'
 import { usePayments } from '~/composables/usePayments'
 import DashboardStorePaymentsStats from '~/components/dashboard/store/payments/PaymentsStats.vue'
 import DashboardStorePaymentsPaymentMethodsTable from '~/components/dashboard/store/payments/PaymentMethodsTable.vue'
 import DashboardStorePaymentsPaymentGatewayList from '~/components/dashboard/store/payments/PaymentGatewayList.vue'
 import DashboardStorePaymentsPaymentGeneralSettings from '~/components/dashboard/store/payments/PaymentGeneralSettings.vue'
+import ReadOnlyNotice from '~/components/dashboard/ReadOnlyNotice.vue'
 
 const { store } = usePayments()
 const currentTab = ref('methods')
+
+const canManage = useCanManage('storeSettings')
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary/5 border-b border-primary/20 px-4 py-3 flex items-center justify-between flex-wrap gap-4">
+  <div v-if="canManage" class="bg-primary/5 border-b border-primary/20 px-4 py-3 flex items-center justify-between flex-wrap gap-4">
     <div class="flex items-center gap-4">
       <div class="flex items-center justify-center">
         <input 
@@ -56,6 +56,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useOrdersStore } from '~/stores/orders'
 
@@ -83,4 +84,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const canManage = useCanManage('orders')
 </script>

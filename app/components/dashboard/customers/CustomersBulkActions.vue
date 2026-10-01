@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary/5 border-b border-primary/20 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2">
+  <div v-if="canManage" class="bg-primary/5 border-b border-primary/20 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2">
     <div class="flex items-center gap-3">
       <div class="w-6 h-6 rounded bg-primary text-white flex items-center justify-center font-bold text-xs">
         {{ store.selectedCustomers.length }}
@@ -29,7 +29,10 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useCustomersStore } from '~/stores/customers'
 
 const store = useCustomersStore()
+
+const canManage = useCanManage('customers')
 </script>

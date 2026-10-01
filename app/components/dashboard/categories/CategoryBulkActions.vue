@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary/5 border-b border-primary/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-10">
+  <div v-if="canManage" class="bg-primary/5 border-b border-primary/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-10">
     <div class="flex items-center gap-3">
       <div class="bg-white dark:bg-surface-dark w-6 h-6 rounded border-2 border-primary flex items-center justify-center text-primary cursor-pointer" @click="store.selectAll(false)">
         <Icon name="ph:check-bold" class="w-4 h-4" />
@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useCategoriesStore } from '~/stores/categories'
 
 const store = useCategoriesStore()
@@ -46,4 +47,6 @@ const deleteSelected = () => {
     store.bulkDelete()
   }
 }
+
+const canManage = useCanManage('products')
 </script>

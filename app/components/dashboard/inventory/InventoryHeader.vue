@@ -25,6 +25,7 @@
         سجل الحركة
       </button>
       <NuxtLink 
+        v-if="canManage"
         to="/dashboard/products/create" 
         class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
       >
@@ -36,10 +37,13 @@
 </template>
 
 <script setup lang="ts">
+import { useCanManage } from '~/composables/useCanManage'
 import { useInventoryStore } from '~/stores/inventory'
 const store = useInventoryStore()
 
 const exportData = async () => {
   await store.exportInventory()
 }
+
+const canManage = useCanManage('products')
 </script>
