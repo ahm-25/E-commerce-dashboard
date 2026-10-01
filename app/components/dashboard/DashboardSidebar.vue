@@ -129,7 +129,7 @@ const storeLinks = [
 ]
 
 const manageLinks = [
-  { name: 'المظهر', path: '/dashboard/appearance', icon: 'ph:palette' },
+  { name: 'المظهر', path: '/dashboard/store/appearance', icon: 'ph:palette' },
   { name: 'الصفحات', path: '/dashboard/pages', icon: 'ph:browser' },
   { name: 'إعدادات المتجر', path: '/dashboard/settings', icon: 'ph:storefront' },
   { name: 'الشحن', path: '/dashboard/shipping', icon: 'ph:truck' },
