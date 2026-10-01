@@ -14,13 +14,15 @@
           <h1 class="text-2xl font-bold text-text dark:text-text-dark">تعديل: {{ form.name || 'جاري التحميل...' }}</h1>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">
-          <UButton color="gray" variant="ghost" to="/dashboard/discounts">إلغاء</UButton>
-          <UButton color="primary" variant="solid" :loading="saving" :disabled="loading" @click="saveDiscount">حفظ التعديلات</UButton>
+                    <NuxtLink to="/dashboard/discounts" class="inline-flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">إلغاء</NuxtLink>
+          <button :disabled="loading || saving" @click="saveDiscount" class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm disabled:opacity-50 min-w-[120px]">
+            {{ saving ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
+          </button>
         </div>
       </div>
 
       <div v-if="loading" class="flex justify-center py-12">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-primary" />
+        <Icon name="ph:spinner-gap" class="w-8 h-8 animate-spin text-primary" />
       </div>
       
       <div v-else-if="error" class="p-12 text-center text-red-500">
@@ -41,8 +43,10 @@
       
       <!-- Mobile Sticky Actions -->
       <div v-if="!loading && !error" class="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-surface dark:bg-surface-dark border-t border-border-light dark:border-border-dark flex gap-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <UButton color="gray" variant="ghost" block class="flex-1" to="/dashboard/discounts">إلغاء</UButton>
-        <UButton color="primary" variant="solid" block class="flex-1" :loading="saving" @click="saveDiscount">حفظ</UButton>
+                <NuxtLink to="/dashboard/discounts" class="flex-1 inline-flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">إلغاء</NuxtLink>
+        <button :disabled="saving" @click="saveDiscount" class="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm disabled:opacity-50">
+          {{ saving ? 'جاري الحفظ...' : 'حفظ' }}
+        </button>
       </div>
     </div>
   </NuxtLayout>

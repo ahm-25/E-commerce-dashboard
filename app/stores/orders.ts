@@ -240,7 +240,7 @@ export const useOrdersStore = defineStore('orders', {
           {
             id: '1',
             orderNumber: '#EDX-10482',
-            customer: { id: 'c1', name: 'أحمد محمد', email: 'ahmed@example.com' },
+            customer: { id: 'CUS-009281', name: 'أحمد محمد', email: 'ahmed@example.com' },
             itemsCount: 3,
             previewItems: [
               { id: 'p1', name: 'Product 1', image: '' },
@@ -439,7 +439,7 @@ export const useOrdersStore = defineStore('orders', {
           id,
           orderNumber: `#EDX-${Math.floor(Math.random() * 10000) + 10000}`,
           customer: {
-            id: 'c1',
+            id: 'CUS-009281',
             name: 'أحمد محمد',
             email: 'ahmed@example.com',
             phone: '01012345678',

@@ -2,43 +2,46 @@
   <div class="p-4 flex flex-col lg:flex-row items-center gap-4 border-b border-border-light dark:border-border-dark bg-white dark:bg-surface-dark">
     <!-- Search -->
     <div class="w-full lg:w-96 relative">
-      <UInput
+      <Icon name="ph:magnifying-glass" class="w-4 h-4 text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      <input
         v-model="searchQuery"
-        icon="i-heroicons-magnifying-glass"
+        type="text"
         placeholder="ابحث باسم الخصم أو كود الخصم..."
-        size="md"
-        class="w-full"
+        class="w-full pr-9 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5 transition-colors"
       />
     </div>
 
     <!-- Filters -->
     <div class="flex items-center gap-2 w-full lg:w-auto overflow-x-auto hide-scrollbar">
-      <USelectMenu
+      <select
         v-model="store.selectedType"
-        :options="typeOptions"
-        placeholder="النوع"
-        class="w-32 lg:w-40"
-        value-attribute="value"
-        option-attribute="label"
-      />
+        aria-label="النوع"
+        class="w-32 lg:w-40 shrink-0 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5 transition-colors"
+      >
+        <option v-for="option in typeOptions" :key="option.value" :value="option.value">
+          {{ option.value === 'all' ? 'النوع: ' + option.label : option.label }}
+        </option>
+      </select>
       
-      <USelectMenu
+      <select
         v-model="store.selectedStatus"
-        :options="statusOptions"
-        placeholder="الحالة"
-        class="w-32 lg:w-40"
-        value-attribute="value"
-        option-attribute="label"
-      />
+        aria-label="الحالة"
+        class="w-32 lg:w-40 shrink-0 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5 transition-colors"
+      >
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+          {{ option.value === 'all' ? 'الحالة: ' + option.label : option.label }}
+        </option>
+      </select>
       
-      <USelectMenu
+      <select
         v-model="store.selectedScope"
-        :options="scopeOptions"
-        placeholder="النطاق"
-        class="w-32 lg:w-40"
-        value-attribute="value"
-        option-attribute="label"
-      />
+        aria-label="النطاق"
+        class="w-32 lg:w-40 shrink-0 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5 transition-colors"
+      >
+        <option v-for="option in scopeOptions" :key="option.value" :value="option.value">
+          {{ option.value === 'all' ? 'النطاق: ' + option.label : option.label }}
+        </option>
+      </select>
     </div>
   </div>
 </template>

@@ -51,24 +51,25 @@
       {{ category.updatedAt }}
     </td>
     <td class="py-3 px-4 text-center">
-      <UPopover mode="click" :popper="{ placement: 'bottom-end' }">
-        <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-muted transition-colors mx-auto">
+      <div ref="menuRef" class="relative inline-block">
+        <button @click="toggleMenu" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-muted transition-colors mx-auto">
           <Icon name="ph:dots-three-outline-vertical-fill" class="w-4 h-4" />
         </button>
-        <template #panel>
+        <!-- Fixed so the table's overflow container doesn't clip the menu -->
+        <div v-if="isMenuOpen" @click="isMenuOpen = false" class="fixed z-30" :style="menuStyle">
           <div class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-lg w-48 p-1 flex flex-col">
-            <button class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-right w-full">
+            <NuxtLink :to="`/dashboard/categories/${category.id}/edit`" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-right w-full">
               <Icon name="ph:pencil-simple-bold" class="w-4 h-4 text-muted" />
               تعديل
-            </button>
+            </NuxtLink>
             <button class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-right w-full">
               <Icon name="ph:eye-bold" class="w-4 h-4 text-muted" />
               عرض القسم
             </button>
-            <button class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-right w-full">
+            <NuxtLink v-if="category.type === 'main'" :to="`/dashboard/categories/create?parent=${category.id}`" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-right w-full">
               <Icon name="ph:plus-circle-bold" class="w-4 h-4 text-muted" />
               إضافة قسم فرعي
-            </button>
+            </NuxtLink>
             <button @click="toggleVisibility" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-right w-full">
               <Icon :name="category.status === 'visible' ? 'ph:eye-slash-bold' : 'ph:eye-bold'" class="w-4 h-4 text-muted" />
               {{ category.status === 'visible' ? 'إخفاء' : 'إظهار' }}
@@ -83,8 +84,8 @@
               حذف
             </button>
           </div>
-        </template>
-      </UPopover>
+        </div>
+      </div>
     </td>
   </tr>
   
@@ -100,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCategoriesStore, type Category } from '~/stores/categories'
 
 const props = defineProps<{
@@ -111,6 +112,38 @@ const props = defineProps<{
 
 const store = useCategoriesStore()
 const isExpanded = ref(true)
+
+const isMenuOpen = ref(false)
+const menuRef = ref<HTMLElement | null>(null)
+
+const menuStyle = ref<Record<string, string>>({})
+
+const toggleMenu = (e: MouseEvent) => {
+  if (!isMenuOpen.value) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    menuStyle.value = { top: `${rect.bottom + 4}px`, left: `${rect.left}px` }
+  }
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+const closeMenuOnOutsideClick = (e: MouseEvent) => {
+  if (menuRef.value && !menuRef.value.contains(e.target as Node)) {
+    isMenuOpen.value = false
+  }
+}
+
+const closeMenu = () => {
+  isMenuOpen.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('click', closeMenuOnOutsideClick)
+  window.addEventListener('scroll', closeMenu, true)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', closeMenuOnOutsideClick)
+  window.removeEventListener('scroll', closeMenu, true)
+})
 
 const isSelected = computed(() => store.selectedCategories.includes(props.category.id))
 
@@ -125,8 +158,6 @@ const toggleVisibility = () => {
 }
 
 const confirmDelete = () => {
-  if (confirm(`هل أنت متأكد من حذف قسم "${props.category.name}"؟`)) {
-    store.deleteCategory(props.category.id)
-  }
+  store.categoryToDelete = props.category
 }
 </script>

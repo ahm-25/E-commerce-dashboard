@@ -17,7 +17,15 @@
         <div class="p-6 flex items-center justify-between border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-gray-800/20 sticky top-0 z-10 backdrop-blur-md">
           <h2 class="text-xl font-bold text-primary-navy dark:text-white font-ibm">تفاصيل العميل</h2>
           <div class="flex items-center gap-2">
-            <button 
+            <NuxtLink
+              :to="`/dashboard/customers/${customer.id}`"
+              @click="store.closePreview()"
+              class="w-8 h-8 rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-center text-muted hover:text-primary transition-colors shadow-sm"
+              title="الملف الكامل"
+            >
+              <Icon name="ph:arrow-square-out-bold" class="w-4 h-4" />
+            </NuxtLink>
+            <button
               @click="store.openEditCustomer(customer)"
               class="w-8 h-8 rounded-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-center text-muted hover:text-primary transition-colors shadow-sm"
               title="تعديل العميل"

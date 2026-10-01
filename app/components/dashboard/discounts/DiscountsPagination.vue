@@ -5,32 +5,31 @@
     </div>
     
     <div class="flex items-center gap-1">
-      <UButton 
-        color="gray" 
-        variant="ghost" 
-        icon="i-heroicons-chevron-right" 
+            <button
         :disabled="store.currentPage === 1"
         @click="store.currentPage--"
-      />
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+      >
+        <Icon name="ph:caret-right-bold" class="w-4 h-4" />
+      </button>
       
-      <UButton 
-        v-for="page in pages" 
+            <button
+        v-for="page in pages"
         :key="page"
-        :color="store.currentPage === page ? 'primary' : 'gray'"
-        :variant="store.currentPage === page ? 'soft' : 'ghost'"
-        class="w-8 h-8 flex items-center justify-center p-0"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors"
+        :class="store.currentPage === page ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-gray-100 dark:hover:bg-gray-800'"
         @click="store.currentPage = page"
       >
         {{ page }}
-      </UButton>
+      </button>
 
-      <UButton 
-        color="gray" 
-        variant="ghost" 
-        icon="i-heroicons-chevron-left" 
+            <button
         :disabled="store.currentPage === store.totalPages || store.totalPages === 0"
         @click="store.currentPage++"
-      />
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+      >
+        <Icon name="ph:caret-left-bold" class="w-4 h-4" />
+      </button>
     </div>
   </div>
 </template>

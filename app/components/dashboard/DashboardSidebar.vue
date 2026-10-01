@@ -130,9 +130,9 @@ const storeLinks = [
 
 const manageLinks = [
   { name: 'المظهر', path: '/dashboard/store/appearance', icon: 'ph:palette' },
-  { name: 'الصفحات', path: '/dashboard/pages', icon: 'ph:browser' },
-  { name: 'إعدادات المتجر', path: '/dashboard/settings', icon: 'ph:storefront' },
-  { name: 'الشحن', path: '/dashboard/shipping', icon: 'ph:truck' },
+  { name: 'الصفحات', path: '/dashboard/store/pages', icon: 'ph:browser' },
+  { name: 'إعدادات المتجر', path: '/dashboard/store/settings', icon: 'ph:storefront' },
+  { name: 'الشحن', path: '/dashboard/store/shipping', icon: 'ph:truck' },
   { name: 'طرق الدفع', path: '/dashboard/store/payments', icon: 'ph:credit-card' },
 ]
 

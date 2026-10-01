@@ -16,6 +16,14 @@ export interface Category {
   updatedAt: string
 }
 
+export type CategoryInput = Pick<Category, 'name' | 'slug' | 'description' | 'image' | 'parentId' | 'status' | 'sortOrder'>
+
+const removeFromTree = (cats: Category[], targetId: string): Category[] => {
+  return cats
+    .filter(c => c.id !== targetId)
+    .map(c => (c.children ? { ...c, children: removeFromTree(c.children, targetId) } : c))
+}
+
 export const useCategoriesStore = defineStore('categories', {
   state: () => ({
     categories: [] as Category[],
@@ -37,7 +45,10 @@ export const useCategoriesStore = defineStore('categories', {
     
     // View state
     viewMode: 'tree' as 'tree' | 'list',
-    selectedCategories: [] as string[]
+    selectedCategories: [] as string[],
+
+    // Delete dialog
+    categoryToDelete: null as Category | null
   }),
   
   getters: {
@@ -131,7 +142,13 @@ export const useCategoriesStore = defineStore('categories', {
         return result
       }
       return flattenCategories(state.categories)
-    }
+    },
+
+    categoryById(): (id: string) => Category | null {
+      return (id: string) => this.flatCategories.find(c => c.id === id) || null
+    },
+
+    mainCategories: (state) => state.categories
   },
   
   actions: {
@@ -337,6 +354,57 @@ export const useCategoriesStore = defineStore('categories', {
     
     async reorderCategories(newCategories: Category[]) {
       this.categories = newCategories;
+    },
+
+    async createCategory(data: CategoryInput) {
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 800))
+
+      const now = new Date().toISOString()
+      const category: Category = {
+        ...data,
+        id: `cat-${Date.now()}`,
+        type: data.parentId ? 'sub' : 'main',
+        productCount: 0,
+        children: [],
+        createdAt: now,
+        updatedAt: 'الآن'
+      }
+      this.insertIntoTree(category)
+      return category
+    },
+
+    async updateCategory(id: string, data: CategoryInput) {
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 800))
+
+      const existing = this.categoryById(id)
+      if (!existing) throw new Error('القسم غير موجود')
+
+      const updated: Category = {
+        ...existing,
+        ...data,
+        type: data.parentId ? 'sub' : 'main',
+        updatedAt: 'الآن'
+      }
+
+      // Remove then re-insert so a parent change moves the category in the tree
+      this.categories = removeFromTree(this.categories, id)
+      this.insertIntoTree(updated)
+      return updated
+    },
+
+    insertIntoTree(category: Category) {
+      if (category.parentId) {
+        const parent = this.categoryById(category.parentId)
+        if (parent) {
+          parent.children = [...(parent.children || []), category]
+          return
+        }
+      }
+      category.parentId = null
+      category.type = 'main'
+      this.categories.push(category)
     }
   }
 })

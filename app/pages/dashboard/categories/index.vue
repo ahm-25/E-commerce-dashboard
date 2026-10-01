@@ -46,41 +46,25 @@
         <div class="hidden xl:block w-[300px]">
           <div class="bg-primary/5 border border-primary/20 rounded-xl p-5 sticky top-6">
             <div class="flex items-center gap-3 mb-4 text-primary">
-              <UIcon name="i-heroicons-folder-open" class="w-6 h-6" />
+              <Icon name="ph:folder-open" class="w-6 h-6" />
               <h3 class="font-bold">إدارة الأقسام</h3>
             </div>
             <p class="text-sm text-text-muted dark:text-text-muted-dark mb-6 leading-relaxed">
               نظّم أقسام متجرك لتحسين تجربة التصفح وتسهيل وصول العملاء للمنتجات.
             </p>
             <div class="flex flex-col gap-3">
-              <UButton
-                color="primary"
-                variant="solid"
-                block
-                to="/dashboard/categories/create"
-                icon="i-heroicons-plus"
-              >
+                            <NuxtLink to="/dashboard/categories/create" class="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
+                <Icon name="ph:plus-bold" class="w-4 h-4" />
                 إضافة قسم
-              </UButton>
-              <UButton
-                color="gray"
-                variant="outline"
-                block
-                icon="i-heroicons-arrows-up-down"
-                class="bg-white dark:bg-surface-dark"
-              >
+              </NuxtLink>
+                            <button class="w-full inline-flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-primary-navy dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm">
+                <Icon name="ph:arrows-down-up" class="w-4 h-4" />
                 إعادة ترتيب الأقسام
-              </UButton>
-              <UButton
-                color="gray"
-                variant="ghost"
-                block
-                icon="i-heroicons-arrow-top-right-on-square"
-                to="/"
-                target="_blank"
-              >
+              </button>
+                            <NuxtLink to="/" target="_blank" class="w-full inline-flex items-center justify-center gap-2 text-muted hover:text-primary-navy dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors">
+                <Icon name="ph:arrow-square-out" class="w-4 h-4" />
                 عرض المتجر
-              </UButton>
+              </NuxtLink>
             </div>
           </div>
         </div>

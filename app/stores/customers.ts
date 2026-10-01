@@ -125,6 +125,10 @@ export const useCustomersStore = defineStore('customers', {
     previewCustomer: (state) => {
       if (!state.previewCustomerId) return null
       return state.customers.find(c => c.id === state.previewCustomerId) || null
+    },
+
+    customerById: (state) => {
+      return (id: string) => state.customers.find(c => c.id === id) || null
     }
   },
   

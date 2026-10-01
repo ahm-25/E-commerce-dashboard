@@ -24,9 +24,9 @@
             <span class="text-xs font-mono text-muted">{{ category.slug }}</span>
           </div>
           <div class="flex items-center gap-1 shrink-0">
-            <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-muted transition-colors">
-              <Icon name="ph:dots-three-outline-vertical-fill" class="w-4 h-4" />
-            </button>
+            <NuxtLink :to="`/dashboard/categories/${category.id}/edit`" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-muted hover:text-primary transition-colors" title="تعديل">
+              <Icon name="ph:pencil-simple-bold" class="w-4 h-4" />
+            </NuxtLink>
           </div>
         </div>
         
