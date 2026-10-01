@@ -83,50 +83,13 @@ export const useShippingStore = defineStore('shipping', {
       this.loading = true
       this.error = null
       try {
-        // TODO: Replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 800))
-
-        this.zones = [
-          {
-            id: 'z1',
-            name: 'القاهرة الكبرى',
-            regions: ['القاهرة', 'الجيزة', 'القليوبية'],
-            isActive: true,
-            rates: [
-              { id: 'r1', name: 'توصيل عادي', type: 'flat', price: 50, freeAbove: 1000, minDays: 1, maxDays: 2 },
-              { id: 'r2', name: 'توصيل في نفس اليوم', type: 'flat', price: 100, minDays: 0, maxDays: 0 }
-            ]
-          },
-          {
-            id: 'z2',
-            name: 'الدلتا والقناة',
-            regions: ['الإسكندرية', 'الشرقية', 'الدقهلية', 'الغربية', 'المنوفية', 'البحيرة', 'دمياط', 'بورسعيد', 'الإسماعيلية', 'السويس'],
-            isActive: true,
-            rates: [
-              { id: 'r3', name: 'توصيل عادي', type: 'weight', price: 65, includedKg: 2, pricePerKg: 10, freeAbove: 1500, minDays: 2, maxDays: 4 }
-            ]
-          },
-          {
-            id: 'z3',
-            name: 'الصعيد',
-            regions: ['الفيوم', 'بني سويف', 'المنيا', 'أسيوط', 'سوهاج', 'قنا', 'الأقصر', 'أسوان'],
-            isActive: false,
-            rates: [
-              { id: 'r4', name: 'توصيل عادي', type: 'flat', price: 85, minDays: 3, maxDays: 6 }
-            ]
-          }
-        ]
-
-        this.carriers = [
-          { id: 'bosta', name: 'Bosta', description: 'توصيل محلي داخل مصر مع تحصيل نقدي', status: 'connected', supportsCod: true, supportsTracking: true },
-          { id: 'aramex', name: 'Aramex', description: 'شحن محلي ودولي', status: 'disconnected', supportsCod: true, supportsTracking: true },
-          { id: 'mylerz', name: 'Mylerz', description: 'توصيل سريع للتجارة الإلكترونية', status: 'disconnected', supportsCod: true, supportsTracking: true },
-          { id: 'jt', name: 'J&T Express', description: 'شحن اقتصادي لكل المحافظات', status: 'disconnected', supportsCod: true, supportsTracking: false }
-        ]
-
+        const data = await $fetch<{ zones: ShippingZone[], carriers: ShippingCarrier[], settings: ShippingSettings }>('/api/admin/shipping')
+        this.zones = data.zones
+        this.carriers = data.carriers
+        this.settings = data.settings
         this.loaded = true
       } catch (err: any) {
-        this.error = err.message || 'تعذر تحميل إعدادات الشحن'
+        this.error = apiError(err, 'تعذر تحميل إعدادات الشحن')
       } finally {
         this.loading = false
       }
@@ -143,37 +106,37 @@ export const useShippingStore = defineStore('shipping', {
     },
 
     async saveZone(zone: ShippingZone) {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 600))
+      const saved = await $fetch<ShippingZone>(`/api/admin/shipping/zones/${encodeURIComponent(zone.id)}`, { method: 'PUT', body: zone })
 
-      const index = this.zones.findIndex(z => z.id === zone.id)
+      const index = this.zones.findIndex(z => z.id === saved.id)
       if (index === -1) {
-        this.zones.push(zone)
+        this.zones.push(saved)
       } else {
-        this.zones[index] = zone
+        this.zones[index] = saved
       }
     },
 
     async deleteZone(id: string) {
+      await $fetch(`/api/admin/shipping/zones/${encodeURIComponent(id)}`, { method: 'DELETE' })
       this.zones = this.zones.filter(z => z.id !== id)
     },
 
     async toggleZone(id: string) {
       const zone = this.zones.find(z => z.id === id)
-      if (zone) zone.isActive = !zone.isActive
+      if (zone) await this.saveZone({ ...zone, isActive: !zone.isActive })
     },
 
     async toggleCarrier(id: string) {
       // TODO: Real connection needs the carrier's API credentials
-      await new Promise(resolve => setTimeout(resolve, 600))
       const carrier = this.carriers.find(c => c.id === id)
-      if (carrier) carrier.status = carrier.status === 'connected' ? 'disconnected' : 'connected'
+      if (!carrier) return
+      const status = carrier.status === 'connected' ? 'disconnected' : 'connected'
+      const saved = await $fetch<ShippingCarrier>(`/api/admin/shipping/carriers/${encodeURIComponent(id)}`, { method: 'PUT', body: { status } })
+      Object.assign(carrier, saved)
     },
 
     async updateSettings(settings: ShippingSettings) {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 600))
-      this.settings = { ...settings }
+      this.settings = await $fetch<ShippingSettings>('/api/admin/shipping/settings', { method: 'PUT', body: settings })
     }
   }
 })

@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { toRaw } from 'vue'
 
 export interface OrderCustomer {
   id: string
@@ -40,10 +39,16 @@ export interface ShippingAddress {
   city: string
   state: string
   country: string
+  region?: string
+  phone?: string
 }
 
 export interface OrderItem {
   id: string
+  productId?: string
+  slug?: string
+  color?: string
+  size?: string
   name: string
   sku: string
   image?: string
@@ -96,6 +101,7 @@ export interface OrderDetails {
   payment: {
     status: 'paid' | 'pending' | 'failed' | 'refunded'
     method?: string
+    methodType?: 'cod' | 'card' | 'wallet' | 'bank_transfer' | 'other'
     transactionId?: string
     paidAt?: string
   }
@@ -114,6 +120,7 @@ export interface OrderDetails {
     url?: string
   }
   source?: string
+  couponCode?: string
   updateCount?: number
   createdAt: string
   updatedAt: string
@@ -136,7 +143,7 @@ const toListItem = (o: OrderDetails): Order => ({
   paymentMethod: o.payment.method,
   status: o.status as Order['status'],
   createdAt: new Date(o.createdAt).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }),
-  updatedAt: 'الآن'
+  updatedAt: new Date(o.updatedAt).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long' })
 })
 
 export const useOrdersStore = defineStore('orders', {
@@ -148,11 +155,11 @@ export const useOrdersStore = defineStore('orders', {
     currentOrder: null as OrderDetails | null,
     loadingOrder: false,
     orderError: null as string | null,
-    totalOrders: 1248,
-    newCount: 86,
-    processingCount: 142,
-    deliveredCount: 934,
-    cancelledCount: 86,
+    totalOrders: 0,
+    newCount: 0,
+    processingCount: 0,
+    deliveredCount: 0,
+    cancelledCount: 0,
     
     // Filters and Pagination
     currentPage: 1,
@@ -168,11 +175,7 @@ export const useOrdersStore = defineStore('orders', {
     selectedOrders: [] as string[],
     
     previewOrderId: null as string | null,
-    isPreviewDrawerOpen: false,
-
-    // Orders created from the dashboard. Kept apart so the mock fetches below don't overwrite them.
-    // TODO: Remove once orders come from the API
-    manualOrders: [] as OrderDetails[]
+    isPreviewDrawerOpen: false
   }),
   
   getters: {
@@ -229,9 +232,8 @@ export const useOrdersStore = defineStore('orders', {
             'Online Payment': 'Online'
          }
          const mappedMethod = methodMap[state.selectedPaymentMethod]
-         if (mappedMethod) {
-             result = result.filter(o => o.paymentMethod === mappedMethod)
-         }
+         // Orders store the method's display name; older data used the codes above
+         result = result.filter(o => o.paymentMethod === state.selectedPaymentMethod || (mappedMethod && o.paymentMethod === mappedMethod))
       }
       
       return result
@@ -257,167 +259,45 @@ export const useOrdersStore = defineStore('orders', {
       this.loading = true
       this.error = null
       
-      // Mock API call
       try {
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        this.orders = [
-          {
-            id: '1',
-            orderNumber: '#EDX-10482',
-            customer: { id: 'CUS-009281', name: 'أحمد محمد', email: 'ahmed@example.com' },
-            itemsCount: 3,
-            previewItems: [
-              { id: 'p1', name: 'Product 1', image: '' },
-              { id: 'p2', name: 'Product 2', image: '' }
-            ],
-            subtotal: 2450,
-            total: 2450,
-            currency: 'ج.م',
-            paymentStatus: 'paid',
-            paymentMethod: 'Credit Card',
-            status: 'processing',
-            createdAt: '26 سبتمبر 2026',
-            updatedAt: 'منذ ساعتين'
-          },
-          {
-            id: '2',
-            orderNumber: '#EDX-10481',
-            customer: { id: 'c2', name: 'محمد علي', phone: '01012345678' },
-            itemsCount: 1,
-            previewItems: [
-              { id: 'p3', name: 'Product 3', image: '' }
-            ],
-            subtotal: 850,
-            total: 850,
-            currency: 'ج.م',
-            paymentStatus: 'paid',
-            paymentMethod: 'COD',
-            status: 'shipped',
-            createdAt: '26 سبتمبر 2026',
-            updatedAt: 'منذ 5 ساعات'
-          },
-          {
-            id: '3',
-            orderNumber: '#EDX-10480',
-            customer: { id: 'c3', name: 'سارة أحمد', email: 'sara@example.com' },
-            itemsCount: 2,
-            previewItems: [
-              { id: 'p4', name: 'Product 4', image: '' }
-            ],
-            subtotal: 1750,
-            total: 1750,
-            currency: 'ج.م',
-            paymentStatus: 'pending',
-            paymentMethod: 'Credit Card',
-            status: 'delivered',
-            createdAt: '25 سبتمبر 2026',
-            updatedAt: 'منذ يوم'
-          },
-          {
-            id: '4',
-            orderNumber: '#EDX-10479',
-            customer: { id: 'c4', name: 'علي حسن', email: 'ali@example.com' },
-            itemsCount: 5,
-            previewItems: [
-              { id: 'p5', name: 'Product 5', image: '' },
-              { id: 'p6', name: 'Product 6', image: '' }
-            ],
-            subtotal: 3200,
-            total: 3200,
-            currency: 'ج.م',
-            paymentStatus: 'refunded',
-            paymentMethod: 'Wallet',
-            status: 'review',
-            createdAt: '25 سبتمبر 2026',
-            updatedAt: 'منذ يوم'
-          },
-          {
-            id: '5',
-            orderNumber: '#EDX-10478',
-            customer: { id: 'c5', name: 'نور خالد', email: 'nour@example.com' },
-            itemsCount: 2,
-            previewItems: [
-              { id: 'p1', name: 'Product 1', image: '' }
-            ],
-            subtotal: 645,
-            total: 645,
-            currency: 'ج.م',
-            paymentStatus: 'paid',
-            paymentMethod: 'Online',
-            status: 'processing',
-            createdAt: '24 سبتمبر 2026',
-            updatedAt: 'منذ يومين'
-          },
-          {
-            id: '6',
-            orderNumber: '#EDX-10477',
-            customer: { id: 'c6', name: 'خالد إبراهيم', email: 'khaled@example.com' },
-            itemsCount: 1,
-            previewItems: [
-              { id: 'p2', name: 'Product 2', image: '' }
-            ],
-            subtotal: 1320,
-            total: 1320,
-            currency: 'ج.م',
-            paymentStatus: 'paid',
-            paymentMethod: 'COD',
-            status: 'cancelled',
-            createdAt: '24 سبتمبر 2026',
-            updatedAt: 'منذ يومين'
-          },
-          {
-            id: '7',
-            orderNumber: '#EDX-10476',
-            customer: { id: 'c7', name: 'مريم ياسر', email: 'mariam@example.com' },
-            itemsCount: 4,
-            previewItems: [
-              { id: 'p3', name: 'Product 3', image: '' }
-            ],
-            subtotal: 2980,
-            total: 2980,
-            currency: 'ج.م',
-            paymentStatus: 'failed',
-            paymentMethod: 'Credit Card',
-            status: 'new',
-            createdAt: '23 سبتمبر 2026',
-            updatedAt: 'منذ 3 أيام'
-          }
-        ]
-        this.orders.unshift(...this.manualOrders.map(toListItem))
+        const orders = await $fetch<OrderDetails[]>('/api/admin/orders')
+        this.orders = orders.map(toListItem)
+        this.computeStats()
       } catch (err: any) {
-        this.error = err.message || 'تعذر تحميل الطلبات'
+        this.error = apiError(err, 'تعذر تحميل الطلبات')
       } finally {
         this.loading = false
       }
     },
+
+    computeStats() {
+      const count = (...statuses: Order['status'][]) => this.orders.filter(o => statuses.includes(o.status)).length
+      this.totalOrders = this.orders.length
+      this.newCount = count('new', 'review')
+      this.processingCount = count('processing', 'shipped')
+      this.deliveredCount = count('delivered', 'completed')
+      this.cancelledCount = count('cancelled', 'refunded')
+    },
     
     async createManualOrder(input: Omit<OrderDetails, 'id' | 'orderNumber' | 'timeline' | 'createdAt' | 'updatedAt'>) {
-      // TODO: Replace with actual API call; the server assigns the number and reserves stock
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      const now = new Date().toISOString()
-      const number = 10483 + this.manualOrders.length
-      const order: OrderDetails = {
-        ...input,
-        id: `manual-${number}`,
-        orderNumber: `#EDX-${number}`,
-        timeline: [{ id: 't1', status: input.status, timestamp: now, icon: 'ph:check-circle', actor: 'إنشاء يدوي من لوحة التحكم' }],
-        createdAt: now,
-        updatedAt: now
-      }
-      this.manualOrders.unshift(order)
+      // TODO: the server should also reserve stock once products are shared
+      const order = await $fetch<OrderDetails>('/api/admin/orders', { method: 'POST', body: input })
       this.orders.unshift(toListItem(order))
+      this.computeStats()
       return order
     },
 
     async deleteOrder(id: string) {
+      await $fetch(`/api/admin/orders/${encodeURIComponent(id)}`, { method: 'DELETE' })
       this.orders = this.orders.filter(o => o.id !== id)
       this.selectedOrders = this.selectedOrders.filter(oid => oid !== id)
+      this.computeStats()
     },
     
     async bulkDelete() {
-      this.orders = this.orders.filter(o => !this.selectedOrders.includes(o.id))
+      for (const id of [...this.selectedOrders]) {
+        await this.deleteOrder(id)
+      }
       this.selectedOrders = []
     },
     
@@ -472,187 +352,46 @@ export const useOrdersStore = defineStore('orders', {
       this.orderError = null
       
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        const manual = this.manualOrders.find(o => o.id === id)
-        if (manual) {
-          this.currentOrder = structuredClone(toRaw(manual))
-          return
-        }
-        
-        // Mock data
-        if (id === 'not-found') {
-          this.currentOrder = null
-          return
-        }
-
-        this.currentOrder = {
-          id,
-          orderNumber: `#EDX-${Math.floor(Math.random() * 10000) + 10000}`,
-          customer: {
-            id: 'CUS-009281',
-            name: 'أحمد محمد',
-            email: 'ahmed@example.com',
-            phone: '01012345678',
-            avatar: '',
-            previousOrdersCount: 12,
-            createdAt: '2025-01-15'
-          },
-          items: [
-            {
-              id: 'i1',
-              name: 'هاتف Samsung Galaxy S24',
-              sku: 'SAM-S24-BLK',
-              image: 'https://placehold.co/100x100/1e293b/fff?text=S24',
-              variant: 'اللون: أسود | السعة: 256GB',
-              quantity: 1,
-              unitPrice: 2850,
-              total: 2850
-            },
-            {
-              id: 'i2',
-              name: 'سماعات لاسلكية',
-              sku: 'HEAD-001',
-              image: 'https://placehold.co/100x100/1e293b/fff?text=Headset',
-              variant: 'اللون: أسود',
-              quantity: 1,
-              unitPrice: 650,
-              total: 650
-            }
-          ],
-          pricing: {
-            subtotal: 3500,
-            discount: 350,
-            shipping: 100,
-            tax: 250,
-            total: 3500,
-            currency: 'ج.م'
-          },
-          payment: {
-            status: 'paid',
-            method: 'بطاقة بنكية',
-            transactionId: 'TXN-928381',
-            paidAt: '2026-09-26T10:24:00Z'
-          },
-          shipping: {
-            address: {
-              name: 'أحمد محمد',
-              street: 'شارع الجمهورية، برج النور، الدور 3',
-              city: 'المنصورة',
-              state: 'الدقهلية',
-              country: 'مصر'
-            },
-            method: 'الشحن القياسي',
-            trackingNumber: 'TRK-82938102',
-            estimatedDelivery: '2026-09-28T00:00:00Z'
-          },
-          status: 'processing',
-          timeline: [
-            { id: 't1', status: 'new', timestamp: '2026-09-26T10:24:00Z', icon: 'ph:check-circle', actor: 'النظام' },
-            { id: 't2', status: 'paid', timestamp: '2026-09-26T10:25:00Z', icon: 'ph:check-circle', actor: 'بوابة الدفع' },
-            { id: 't3', status: 'processing', timestamp: '2026-09-26T11:40:00Z', icon: 'ph:spinner', actor: 'أحمد مدير المتجر' }
-          ],
-          notes: [
-            {
-              id: 'n1',
-              authorName: 'أحمد محمد',
-              createdAt: '2026-09-26T11:30:00Z',
-              content: 'العميل طلب الاتصال قبل التوصيل.',
-              type: 'customer'
-            },
-            {
-              id: 'n2',
-              authorName: 'فريق المتجر',
-              createdAt: '2026-09-26T10:45:00Z',
-              content: 'تم تجهيز الطلب وسيتم شحنه خلال 24 ساعة.',
-              type: 'internal'
-            }
-          ],
-          invoice: {
-            id: 'inv1',
-            number: 'INV-10482',
-            url: '#'
-          },
-          source: 'Online Store',
-          updateCount: 5,
-          createdAt: '2026-09-26T10:24:00Z',
-          updatedAt: '2026-09-26T11:40:00Z'
-        }
+        this.currentOrder = await $fetch<OrderDetails>(`/api/admin/orders/${encodeURIComponent(id)}`)
       } catch (err: any) {
-        this.orderError = err.message || 'تعذر تحميل بيانات الطلب'
+        this.currentOrder = null
+        // A missing order is shown as "not found" by the page, not as an error
+        if (err?.statusCode !== 404) this.orderError = apiError(err, 'تعذر تحميل بيانات الطلب')
       } finally {
         this.loadingOrder = false
       }
     },
 
-    async updateOrderStatus(id: string, newStatus: string) {
-      if (!this.currentOrder || this.currentOrder.id !== id) return
-      
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      this.currentOrder.status = newStatus as any
-      this.currentOrder.timeline.push({
-        id: `t${Date.now()}`,
-        status: newStatus,
-        timestamp: new Date().toISOString(),
-        actor: 'مدير المتجر',
-        icon: 'ph:check-circle'
+    // Applies a status change on the server and syncs the details + list row
+    async changeStatus(id: string, status: OrderDetails['status'], note?: string) {
+      const updated = await $fetch<OrderDetails>(`/api/admin/orders/${encodeURIComponent(id)}/status`, {
+        method: 'POST',
+        body: { status, note }
       })
-      this.currentOrder.updateCount = (this.currentOrder.updateCount || 0) + 1
-      this.currentOrder.updatedAt = new Date().toISOString()
+      if (this.currentOrder?.id === id) this.currentOrder = updated
+      const index = this.orders.findIndex(o => o.id === id)
+      if (index !== -1) this.orders[index] = toListItem(updated)
+      this.computeStats()
+    },
+
+    async updateOrderStatus(id: string, newStatus: string) {
+      await this.changeStatus(id, newStatus as OrderDetails['status'])
     },
 
     async cancelOrder(id: string, reason: string) {
-      if (!this.currentOrder || this.currentOrder.id !== id) return
-      
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      this.currentOrder.status = 'cancelled'
-      this.currentOrder.timeline.push({
-        id: `t${Date.now()}`,
-        status: 'cancelled',
-        timestamp: new Date().toISOString(),
-        actor: 'مدير المتجر',
-        icon: 'ph:x-circle',
-        note: `سبب الإلغاء: ${reason}`
-      })
+      await this.changeStatus(id, 'cancelled', reason ? `سبب الإلغاء: ${reason}` : undefined)
     },
 
     async addOrderNote(id: string, note: { content: string, type: 'internal' | 'customer' }) {
-      if (!this.currentOrder || this.currentOrder.id !== id) return
-      
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      if (!this.currentOrder.notes) {
-        this.currentOrder.notes = []
+      const created = await $fetch<OrderNote>(`/api/admin/orders/${encodeURIComponent(id)}/notes`, { method: 'POST', body: note })
+      if (this.currentOrder?.id === id) {
+        this.currentOrder.notes = [created, ...(this.currentOrder.notes ?? [])]
       }
-      
-      this.currentOrder.notes.unshift({
-        id: `n${Date.now()}`,
-        authorName: 'أنت',
-        createdAt: new Date().toISOString(),
-        content: note.content,
-        type: note.type
-      })
     },
 
     async refundOrder(id: string, payload: any) {
-      // TODO: Connect to backend refund endpoint
-      console.log('Refund order', id, payload)
-      if (!this.currentOrder || this.currentOrder.id !== id) return
-      
-      await new Promise(resolve => setTimeout(resolve, 500))
-      this.currentOrder.status = 'refunded'
-      this.currentOrder.timeline.push({
-        id: `t${Date.now()}`,
-        status: 'refunded',
-        timestamp: new Date().toISOString(),
-        actor: 'مدير المتجر',
-        icon: 'ph:arrow-u-up-left'
-      })
+      // TODO: Connect to the payment gateway's refund API (amount / reason are in payload)
+      await this.changeStatus(id, 'refunded', payload?.reason)
     },
 
     async downloadInvoice(id: string) {

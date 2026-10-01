@@ -18,6 +18,16 @@ export default defineNuxtConfig({
     },
     display: 'swap'
   },
+  // Runs next to the storefront (E-commerce-v2 on :3000), which proxies /api/storefront from here
+  devServer: {
+    port: 3001,
+  },
+  nitro: {
+    storage: {
+      // Shared mock database (discounts, shipping, payments) — see server/utils/db.ts
+      db: { driver: 'fs', base: './.data/db' },
+    },
+  },
   tailwindcss: {
     cssPath: '~/assets/css/tailwind.css',
     configPath: 'tailwind.config.ts',

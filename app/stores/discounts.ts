@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export interface Discount {
   id: string
   name: string
+  description?: string
   code: string | 'تلقائي'
   method: 'coupon' | 'automatic'
   type: 'percentage' | 'fixed' | 'free_shipping'
@@ -20,8 +21,20 @@ export interface Discount {
   usageLimit?: number
   onePerCustomer: boolean
   startDate: string
-  endDate?: string
+  endDate?: string | null
   status: 'active' | 'scheduled' | 'expired' | 'disabled'
+}
+
+// Form model (datetime-local strings, UI-only flags) -> API model.
+// Empty fields are sent as null so an update actually clears them.
+function toDiscountPayload(form: any): Partial<Discount> {
+  const { noEndDate, ...rest } = form
+  return {
+    ...rest,
+    code: form.method === 'automatic' ? 'تلقائي' : String(form.code ?? '').trim().toUpperCase(),
+    startDate: form.startDate ? new Date(form.startDate).toISOString() : new Date().toISOString(),
+    endDate: !noEndDate && form.endDate ? new Date(form.endDate).toISOString() : null
+  }
 }
 
 export const useDiscountsStore = defineStore('discounts', {
@@ -120,137 +133,92 @@ export const useDiscountsStore = defineStore('discounts', {
       this.error = null
       
       try {
-        // Mock API call
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        this.discounts = [
-          {
-            id: 'DSC-00042',
-            name: 'خصم الصيف',
-            code: 'SUMMER25',
-            method: 'coupon',
-            type: 'percentage',
-            value: 25,
-            scope: 'all',
-            customerEligibility: 'all',
-            firstOrderOnly: false,
-            usageCount: 142,
-            usageLimit: 500,
-            onePerCustomer: true,
-            startDate: '2026-09-01T00:00:00.000Z',
-            endDate: '2026-09-30T23:59:59.000Z',
-            status: 'active'
-          },
-          {
-            id: 'DSC-00043',
-            name: 'شحن مجاني للطلبات الكبيرة',
-            code: 'تلقائي',
-            method: 'automatic',
-            type: 'free_shipping',
-            value: 0,
-            scope: 'all',
-            minOrderValue: 1000,
-            customerEligibility: 'all',
-            firstOrderOnly: false,
-            usageCount: 28,
-            onePerCustomer: false,
-            startDate: '2026-09-10T00:00:00.000Z',
-            status: 'active'
-          },
-          {
-            id: 'DSC-00044',
-            name: 'خصم العودة للمدارس',
-            code: 'SCHOOL26',
-            method: 'coupon',
-            type: 'fixed',
-            value: 350,
-            scope: 'categories',
-            selectedCategories: ['أدوات مدرسية', 'حقائب'],
-            customerEligibility: 'all',
-            firstOrderOnly: false,
-            usageCount: 0,
-            usageLimit: 100,
-            onePerCustomer: true,
-            startDate: '2026-10-01T00:00:00.000Z',
-            endDate: '2026-10-15T23:59:59.000Z',
-            status: 'scheduled'
-          },
-          {
-            id: 'DSC-00045',
-            name: 'خصم الشتاء',
-            code: 'WINTER25',
-            method: 'coupon',
-            type: 'percentage',
-            value: 15,
-            scope: 'products',
-            customerEligibility: 'all',
-            firstOrderOnly: false,
-            usageCount: 450,
-            usageLimit: 500,
-            onePerCustomer: false,
-            startDate: '2025-12-01T00:00:00.000Z',
-            endDate: '2026-02-28T23:59:59.000Z',
-            status: 'expired'
-          }
-        ]
-        
+        this.discounts = await $fetch<Discount[]>('/api/admin/discounts')
         this.fetchDiscountStats()
       } catch (err: any) {
-        this.error = err.message || 'تعذر تحميل الخصومات'
+        this.error = apiError(err, 'تعذر تحميل الخصومات')
       } finally {
         this.loading = false
       }
     },
     
-    async fetchDiscountStats() {
-      // Mock stats
-      this.totalDiscounts = 48
-      this.activeDiscounts = 18
-      this.scheduledDiscounts = 7
-      this.expiredDiscounts = 23
-      this.totalUses = 2846
+    fetchDiscountStats() {
+      this.totalDiscounts = this.discounts.length
+      this.activeDiscounts = this.discounts.filter(d => d.status === 'active').length
+      this.scheduledDiscounts = this.discounts.filter(d => d.status === 'scheduled').length
+      this.expiredDiscounts = this.discounts.filter(d => d.status === 'expired').length
+      this.totalUses = this.discounts.reduce((sum, d) => sum + d.usageCount, 0)
+      // TODO: needs order data to know the real value of discounts used
       this.totalValue = 184500
     },
 
     async fetchDiscount(id: string) {
-      // In real app, fetch from API. Here we find in store or mock.
-      const discount = this.discounts.find(d => d.id === id)
-      if (discount) return discount
-      return null
+      try {
+        return await $fetch<Discount>(`/api/admin/discounts/${encodeURIComponent(id)}`)
+      } catch {
+        return null
+      }
     },
     
     async createDiscount(discountData: any) {
-      // TODO: Connect to backend create endpoint
-      await new Promise(resolve => setTimeout(resolve, 800))
-      return true
+      try {
+        const created = await $fetch<Discount>('/api/admin/discounts', { method: 'POST', body: toDiscountPayload(discountData) })
+        this.discounts.push(created)
+        this.fetchDiscountStats()
+        return true
+      } catch (err: any) {
+        throw new Error(apiError(err, 'حدث خطأ أثناء حفظ الخصم'))
+      }
     },
     
     async updateDiscount(id: string, discountData: any) {
-      // TODO: Connect to backend update endpoint
-      await new Promise(resolve => setTimeout(resolve, 800))
-      return true
+      try {
+        await this.saveDiscount(id, toDiscountPayload(discountData))
+        return true
+      } catch (err: any) {
+        throw new Error(apiError(err, 'حدث خطأ أثناء تحديث الخصم'))
+      }
+    },
+
+    async saveDiscount(id: string, changes: Partial<Discount>) {
+      const updated = await $fetch<Discount>(`/api/admin/discounts/${encodeURIComponent(id)}`, { method: 'PUT', body: changes })
+      const index = this.discounts.findIndex(d => d.id === id)
+      if (index !== -1) this.discounts[index] = updated
+      this.fetchDiscountStats()
+      return updated
     },
     
     async enableDiscount(id: string) {
-      // TODO: Connect to backend enable endpoint
-      const discount = this.discounts.find(d => d.id === id)
-      if (discount) discount.status = 'active'
+      // The server derives active/scheduled/expired from the dates
+      await this.saveDiscount(id, { status: 'active' })
     },
     
     async disableDiscount(id: string) {
-      // TODO: Connect to backend disable endpoint
-      const discount = this.discounts.find(d => d.id === id)
-      if (discount) discount.status = 'disabled'
+      await this.saveDiscount(id, { status: 'disabled' })
     },
     
     async deleteDiscount(id: string) {
-      // TODO: Connect to backend delete endpoint
+      await $fetch(`/api/admin/discounts/${encodeURIComponent(id)}`, { method: 'DELETE' })
       this.discounts = this.discounts.filter(d => d.id !== id)
       this.selectedDiscounts = this.selectedDiscounts.filter(dId => dId !== id)
+      this.fetchDiscountStats()
     },
     
     async duplicateDiscount(id: string) {
-      // TODO: Connect to backend duplicate endpoint
+      const source = this.discounts.find(d => d.id === id)
+      if (!source) return
+      const { id: _id, usageCount: _uses, ...rest } = source
+      const copy = await $fetch<Discount>('/api/admin/discounts', {
+        method: 'POST',
+        body: {
+          ...rest,
+          name: `${source.name} (نسخة)`,
+          code: source.method === 'coupon' ? `${source.code}-COPY` : source.code,
+          status: 'disabled'
+        }
+      })
+      this.discounts.push(copy)
+      this.fetchDiscountStats()
     },
     
     async exportDiscounts(type: 'current' | 'all', format: 'csv' | 'excel') {
@@ -308,7 +276,9 @@ export const useDiscountsStore = defineStore('discounts', {
     },
     
     async bulkDelete() {
-      this.discounts = this.discounts.filter(d => !this.selectedDiscounts.includes(d.id))
+      for (const id of [...this.selectedDiscounts]) {
+        await this.deleteDiscount(id)
+      }
       this.selectedDiscounts = []
     }
   }

@@ -57,82 +57,24 @@ export const usePaymentsStore = defineStore('payments', {
     async fetchPaymentData() {
       this.loading = true
       this.error = null
-      
-      // Mock data fetching
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          this.paymentMethods = [
-            {
-              id: '1',
-              name: 'الدفع عند الاستلام',
-              type: 'cod',
-              provider: null,
-              fees: { type: 'fixed', fixedAmount: 15 },
-              status: 'active',
-              order: 1,
-              isDefault: true,
-              updatedAt: new Date().toISOString()
-            },
-            {
-              id: '2',
-              name: 'البطاقات الائتمانية',
-              type: 'card',
-              provider: 'Stripe',
-              fees: { type: 'percentage', percentage: 2.5 },
-              status: 'active',
-              order: 2,
-              isDefault: false,
-              updatedAt: new Date().toISOString()
-            },
-            {
-              id: '3',
-              name: 'المحافظ الإلكترونية',
-              type: 'wallet',
-              provider: 'Paymob',
-              fees: { type: 'none' },
-              status: 'setup_required',
-              order: 3,
-              isDefault: false,
-              updatedAt: new Date().toISOString()
-            },
-            {
-              id: '4',
-              name: 'تحويل بنكي',
-              type: 'bank_transfer',
-              provider: null,
-              fees: { type: 'none' },
-              status: 'inactive',
-              order: 4,
-              isDefault: false,
-              updatedAt: new Date().toISOString()
-            }
-          ]
+      try {
+        const data = await $fetch<{ methods: PaymentMethod[], gateways: PaymentGateway[], settings: PaymentSettings }>('/api/admin/payments')
+        this.paymentMethods = [...data.methods].sort((a, b) => a.order - b.order)
+        this.paymentGateways = data.gateways
+        this.generalSettings = data.settings
+      } catch (err: any) {
+        this.error = apiError(err, 'تعذر تحميل إعدادات الدفع')
+      } finally {
+        this.loading = false
+      }
+    },
 
-          this.paymentGateways = [
-            {
-              id: 'g1',
-              providerName: 'Stripe',
-              description: 'بوابة الدفع الإلكترونية العالمية.',
-              status: 'connected',
-              environment: 'live',
-              supportedMethods: ['card'],
-              lastConnectionCheck: new Date().toISOString()
-            },
-            {
-              id: 'g2',
-              providerName: 'Paymob',
-              description: 'بوابة الدفع المحلية لدعم المحافظ والبطاقات.',
-              status: 'setup_required',
-              environment: 'test',
-              supportedMethods: ['card', 'wallet']
-            }
-          ]
-
-          this.generalSettings.defaultMethodId = '1'
-
-          this.loading = false
-          resolve()
-        }, 800)
+    // Persists the whole methods list (status, default flag and order)
+    async saveMethods() {
+      const now = new Date().toISOString()
+      this.paymentMethods = await $fetch<PaymentMethod[]>('/api/admin/payments/methods', {
+        method: 'PUT',
+        body: this.paymentMethods.map(m => ({ ...m, updatedAt: now }))
       })
     },
 
@@ -140,6 +82,7 @@ export const usePaymentsStore = defineStore('payments', {
       const method = this.paymentMethods.find(m => m.id === id)
       if (method) {
         method.status = active ? 'active' : 'inactive'
+        await this.saveMethods()
       }
     },
 
@@ -148,6 +91,7 @@ export const usePaymentsStore = defineStore('payments', {
         m.isDefault = m.id === id
       })
       this.generalSettings.defaultMethodId = id
+      await this.saveMethods()
     },
 
     async reorderMethods(newOrderIds: string[]) {
@@ -156,6 +100,7 @@ export const usePaymentsStore = defineStore('payments', {
         if (method) method.order = index + 1
       })
       this.paymentMethods.sort((a, b) => a.order - b.order)
+      await this.saveMethods()
     },
 
     async testGatewayConnection(id: string) {
@@ -177,7 +122,7 @@ export const usePaymentsStore = defineStore('payments', {
     },
 
     async updateSettings(settings: Partial<PaymentSettings>) {
-      this.generalSettings = { ...this.generalSettings, ...settings }
+      this.generalSettings = await $fetch<PaymentSettings>('/api/admin/payments/settings', { method: 'PUT', body: settings })
     }
   }
 })
