@@ -9,23 +9,27 @@
           @change="isDirty = true"
           class="w-full px-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-bg-dark text-primary-navy dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none"
         >
-          <option :value="null" disabled>اختر القسم</option>
-          <option value="electronics">إلكترونيات</option>
-          <option value="clothing">ملابس</option>
-          <option value="home">المنزل</option>
+          <option :value="null">بدون قسم</option>
+          <template v-for="main in categories.categories" :key="main.id">
+            <option :value="main.id">{{ main.name }}</option>
+            <option v-for="sub in main.children || []" :key="sub.id" :value="sub.id">— {{ sub.name }}</option>
+          </template>
         </select>
         <Icon name="ph:caret-down" class="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
       </div>
       
-      <button class="mt-3 text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+      <NuxtLink to="/dashboard/categories/create" target="_blank" class="mt-3 text-primary font-bold text-sm inline-flex items-center gap-1 hover:underline">
         <Icon name="ph:plus" />
         إضافة قسم
-      </button>
+      </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useProductForm } from '~/composables/useProductForm'
+import { useCategoriesStore } from '~/stores/categories'
+
 const { form, isDirty } = useProductForm()
+const categories = useCategoriesStore()
 </script>

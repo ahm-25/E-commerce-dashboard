@@ -5,7 +5,10 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Price -->
       <div>
-        <label class="block text-sm font-bold text-primary-navy dark:text-white mb-2">السعر <span class="text-danger">*</span></label>
+        <label class="block text-sm font-bold text-primary-navy dark:text-white mb-2">
+          {{ form.type === 'variable' ? 'السعر الأساسي' : 'السعر' }}
+          <span v-if="form.type === 'simple'" class="text-danger">*</span>
+        </label>
         <div class="relative">
           <input 
             v-model="form.price" 
@@ -22,7 +25,8 @@
             ج.م
           </div>
         </div>
-        <p v-if="errors.price" class="text-danger text-xs mt-1">{{ errors.price }}</p>
+        <p v-if="errors.price" data-field-error class="text-danger text-xs mt-1">{{ errors.price }}</p>
+        <p v-else-if="form.type === 'variable'" class="text-muted text-xs mt-1">للمتغيرات اللي مالهاش سعر خاص</p>
       </div>
 
       <!-- Compare at Price -->
@@ -44,7 +48,7 @@
             ج.م
           </div>
         </div>
-        <p v-if="errors.compareAtPrice" class="text-danger text-xs mt-1">{{ errors.compareAtPrice }}</p>
+        <p v-if="errors.compareAtPrice" data-field-error class="text-danger text-xs mt-1">{{ errors.compareAtPrice }}</p>
         <p v-else class="text-muted text-[11px] mt-1">استخدم هذا الحقل لعرض السعر الأصلي قبل الخصم.</p>
       </div>
 

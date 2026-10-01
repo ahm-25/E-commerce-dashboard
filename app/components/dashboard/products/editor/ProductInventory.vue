@@ -20,7 +20,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <!-- SKU -->
       <div>
-        <label class="block text-sm font-bold text-primary-navy dark:text-white mb-2">SKU</label>
+        <label class="block text-sm font-bold text-primary-navy dark:text-white mb-2">{{ form.type === 'variable' ? 'SKU الأساسي' : 'SKU' }}</label>
         <input 
           v-model="form.sku" 
           @input="isDirty = true"
@@ -32,15 +32,19 @@
       </div>
 
       <!-- Stock -->
-      <div v-if="form.trackInventory">
+      <div v-if="form.trackInventory && form.type === 'simple'">
         <label class="block text-sm font-bold text-primary-navy dark:text-white mb-2">كمية المخزون <span class="text-danger">*</span></label>
         <input 
           v-model="form.stock" 
           @input="isDirty = true"
           type="number" 
+          min="0"
+          step="1"
+          :class="{ 'border-danger': errors.stock }"
           class="w-full px-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-bg-dark text-primary-navy dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-left"
           dir="ltr"
         >
+        <p v-if="errors.stock" data-field-error class="text-danger text-xs mt-1">{{ errors.stock }}</p>
       </div>
 
       <!-- Low Stock Threshold -->
@@ -56,6 +60,8 @@
       </div>
     </div>
     
+    <p v-if="form.trackInventory && form.type === 'variable'" class="text-xs text-muted -mt-2 mb-4">المخزون بيتحدد لكل متغير في جدول المتغيرات.</p>
+
     <div v-if="form.trackInventory" class="flex items-center gap-3 pt-4 border-t border-border-light dark:border-border-dark">
       <button 
         @click="form.allowBackorders = !form.allowBackorders; isDirty = true"
@@ -74,5 +80,5 @@
 
 <script setup lang="ts">
 import { useProductForm } from '~/composables/useProductForm'
-const { form, isDirty } = useProductForm()
+const { form, isDirty, errors } = useProductForm()
 </script>

@@ -22,19 +22,27 @@
         <NuxtLink to="/dashboard/products" class="px-5 py-2.5 text-sm font-medium border border-border-light dark:border-border-dark rounded-lg hover:bg-bg dark:hover:bg-bg-dark transition-colors">
           إلغاء
         </NuxtLink>
-        <button @click="saveDraft" class="px-5 py-2.5 text-sm font-medium border border-border-light dark:border-border-dark rounded-lg hover:bg-bg dark:hover:bg-bg-dark transition-colors">
+        <button v-if="!isEditing" @click="saveDraft" :disabled="loading" class="px-5 py-2.5 text-sm font-medium border border-border-light dark:border-border-dark rounded-lg hover:bg-bg dark:hover:bg-bg-dark transition-colors disabled:opacity-50">
           حفظ كمسودة
         </button>
         <button @click="publishProduct" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-sm" :disabled="loading">
           <Icon v-if="loading" name="ph:spinner-gap" class="w-4 h-4 animate-spin" />
           <Icon v-else name="ph:paper-plane-tilt-bold" class="w-4 h-4" />
-          {{ loading ? 'جاري الحفظ...' : 'نشر المنتج' }}
+          {{ loading ? 'جاري الحفظ...' : isEditing ? 'حفظ التغييرات' : 'نشر المنتج' }}
         </button>
       </div>
     </div>
 
+    <div v-if="loadingProduct" class="h-96 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+
+    <div v-else-if="notFound" class="bg-surface dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl p-12 text-center shadow-sm">
+      <Icon name="ph:package" class="w-16 h-16 text-muted mx-auto mb-4 opacity-50" />
+      <h2 class="text-2xl font-bold text-primary-navy dark:text-white mb-2">المنتج غير موجود</h2>
+      <NuxtLink to="/dashboard/products" class="inline-flex mt-4 px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-sm">العودة للمنتجات</NuxtLink>
+    </div>
+
     <!-- Main Content Layout -->
-    <div class="flex flex-col xl:flex-row gap-6 pb-24 md:pb-6">
+    <div v-else class="flex flex-col xl:flex-row gap-6 pb-24 md:pb-6">
       <!-- Left Column (70%) -->
       <div class="flex-1 flex flex-col gap-6 w-full xl:w-[70%]">
         <ProductBasicInfo />
@@ -59,10 +67,10 @@
 
     <!-- Mobile Action Bar -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border-light dark:border-border-dark p-4 flex items-center justify-between z-40 gap-3 shadow-lg">
-      <button @click="saveDraft" class="flex-1 px-4 py-2.5 text-sm font-medium border border-border-light dark:border-border-dark rounded-lg bg-surface dark:bg-surface-dark">حفظ كمسودة</button>
+      <button v-if="!isEditing" @click="saveDraft" :disabled="loading" class="flex-1 px-4 py-2.5 text-sm font-medium border border-border-light dark:border-border-dark rounded-lg bg-surface dark:bg-surface-dark">حفظ كمسودة</button>
       <button @click="publishProduct" class="flex-1 px-6 py-2.5 text-sm font-medium bg-primary text-white rounded-lg flex justify-center items-center gap-2" :disabled="loading">
         <Icon v-if="loading" name="ph:spinner-gap" class="w-4 h-4 animate-spin" />
-        نشر
+        {{ isEditing ? 'حفظ' : 'نشر' }}
       </button>
     </div>
     
@@ -77,7 +85,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, onBeforeRouteLeave } from 'vue-router'
-import { useProductForm } from '~/composables/useProductForm'
+import { provideProductForm } from '~/composables/useProductForm'
+import { useProductsStore } from '~/stores/products'
+import { useCategoriesStore } from '~/stores/categories'
 
 import ProductBasicInfo from './ProductBasicInfo.vue'
 import ProductImageUploader from './ProductImageUploader.vue'
@@ -100,18 +110,27 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const { form, isDirty, loading, validate, resetForm } = useProductForm()
+const products = useProductsStore()
+const categories = useCategoriesStore()
+
+// This component owns the form; every section below reads the same instance
+const { form, isDirty, loading, validate, focusFirstError, setProduct, resolvedVariants } = provideProductForm()
 
 const showUnsavedDialog = ref(false)
+const notFound = ref(false)
+const loadingProduct = ref(props.isEditing)
 let pendingRoute: any = null
 
-onMounted(() => {
-  resetForm()
-  if (props.isEditing && props.productId) {
-    // load data mock
-  }
-  
+onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload)
+  if (!categories.categories.length) categories.fetchCategories()
+
+  if (props.isEditing && props.productId) {
+    const data = await products.getProductForm(props.productId)
+    if (data) await setProduct(data)
+    else notFound.value = true
+    loadingProduct.value = false
+  }
 })
 
 onBeforeUnmount(() => {
@@ -148,25 +167,33 @@ const handleLeave = () => {
   }
 }
 
-const saveDraft = async () => {
-  loading.value = true
-  await new Promise(r => setTimeout(r, 800))
-  loading.value = false
-  isDirty.value = false
-  alert('تم حفظ المنتج كمسودة.')
-}
-
-const publishProduct = async () => {
-  if (!validate()) {
-    alert('يرجى مراجعة الحقول المطلوبة')
+const save = async (status: 'draft' | 'published' | null) => {
+  const targetStatus = status ?? form.status
+  // Drafts only need a name; anything visible to customers needs the full rules
+  if (!validate(targetStatus === 'published')) {
+    focusFirstError()
     return
   }
-  
+  form.status = targetStatus
+
   loading.value = true
-  await new Promise(r => setTimeout(r, 1000))
-  loading.value = false
-  isDirty.value = false
-  alert(props.isEditing ? 'تم تحديث المنتج بنجاح.' : 'تم نشر المنتج بنجاح.')
-  router.push('/dashboard/products')
+  try {
+    await products.saveProduct(props.productId, {
+      form,
+      variants: form.type === 'variable'
+        ? resolvedVariants.value.map(v => ({ key: v.key, label: v.label, sku: v.sku, price: v.price, stock: v.stock }))
+        : [],
+      categoryName: form.categoryId ? categories.categoryById(form.categoryId)?.name ?? null : null
+    })
+    isDirty.value = false
+    router.push('/dashboard/products')
+  } catch (err: any) {
+    alert(err.message || 'تعذر حفظ المنتج')
+  } finally {
+    loading.value = false
+  }
 }
+
+const saveDraft = () => save('draft')
+const publishProduct = () => save(props.isEditing ? null : 'published')
 </script>

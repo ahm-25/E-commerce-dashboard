@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { toRaw } from 'vue'
+import { createDefaultForm, type ProductForm } from '~/composables/useProductForm'
 
 export interface Product {
   id: string
@@ -15,6 +17,35 @@ export interface Product {
     name: string
   }
   updatedAt: string
+  type?: 'simple' | 'variable'
+  variantsCount?: number
+}
+
+export interface SavedProduct {
+  form: ProductForm
+  // Resolved at save time: SKU and price filled in for every variant
+  variants: { key: string, label: string, sku: string, price: number | null, stock: number }[]
+  categoryName: string | null
+}
+
+// List row from saved editor data; variable products show the lowest price and total stock
+const toListItem = (id: string, { form, variants, categoryName }: SavedProduct): Product => {
+  const prices = variants.map(v => v.price).filter((p): p is number => p != null)
+  return {
+    id,
+    name: form.name,
+    slug: form.seo.slug || id,
+    sku: form.type === 'variable' ? (form.sku || variants[0]?.sku || '') : form.sku,
+    image: form.images[0]?.url,
+    price: form.type === 'variable' ? (prices.length ? Math.min(...prices) : 0) : form.price ?? 0,
+    compareAtPrice: form.compareAtPrice ?? undefined,
+    stock: form.type === 'variable' ? variants.reduce((s, v) => s + v.stock, 0) : form.stock ?? 0,
+    status: form.status,
+    category: form.categoryId ? { id: form.categoryId, name: categoryName || '' } : undefined,
+    updatedAt: 'الآن',
+    type: form.type,
+    variantsCount: variants.length
+  }
 }
 
 export const useProductsStore = defineStore('products', {
@@ -41,7 +72,12 @@ export const useProductsStore = defineStore('products', {
     // View state
     viewMode: 'table' as 'table' | 'grid',
     
-    selectedProducts: [] as string[]
+    selectedProducts: [] as string[],
+
+    // Full editor data of products saved from the dashboard, by id.
+    // Kept apart so fetchProducts' mock list doesn't overwrite them.
+    // TODO: Remove once products come from the API
+    savedProducts: {} as Record<string, SavedProduct>
   }),
   
   getters: {
@@ -188,6 +224,13 @@ export const useProductsStore = defineStore('products', {
             image: ''
           }
         ]
+        // Saved products replace their mock row, new ones go first
+        for (const [id, saved] of Object.entries(this.savedProducts).reverse()) {
+          const row = toListItem(id, saved)
+          const index = this.products.findIndex(p => p.id === id)
+          if (index === -1) this.products.unshift(row)
+          else this.products[index] = row
+        }
       } catch (err: any) {
         this.error = err.message || 'تعذر تحميل المنتجات'
       } finally {
@@ -195,6 +238,41 @@ export const useProductsStore = defineStore('products', {
       }
     },
     
+    // Editor data for a product: the saved form, or one built from the list row
+    async getProductForm(id: string): Promise<ProductForm | null> {
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 400))
+      if (this.savedProducts[id]) return structuredClone(toRaw(this.savedProducts[id].form))
+      if (!this.products.length) await this.fetchProducts()
+      const p = this.products.find(x => x.id === id)
+      if (!p) return null
+      return {
+        ...createDefaultForm(),
+        name: p.name,
+        price: p.price,
+        compareAtPrice: p.compareAtPrice ?? null,
+        sku: p.sku,
+        stock: p.stock,
+        status: p.status,
+        categoryId: p.category?.id ?? null,
+        images: p.image ? [{ id: 'img1', url: p.image, name: p.name }] : [],
+        seo: { title: '', description: '', slug: p.slug }
+      }
+    },
+
+    async saveProduct(id: string | null, saved: SavedProduct) {
+      // TODO: Replace with actual API call (multipart upload for images)
+      await new Promise(resolve => setTimeout(resolve, 800))
+      const productId = id ?? `p-${Date.now()}`
+      this.savedProducts[productId] = structuredClone(toRaw(saved))
+
+      const row = toListItem(productId, saved)
+      const index = this.products.findIndex(p => p.id === productId)
+      if (index === -1) this.products.unshift(row)
+      else this.products[index] = row
+      return productId
+    },
+
     async deleteProduct(id: string) {
       this.products = this.products.filter(p => p.id !== id)
       this.selectedProducts = this.selectedProducts.filter(pid => pid !== id)

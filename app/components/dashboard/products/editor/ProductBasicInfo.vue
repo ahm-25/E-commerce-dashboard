@@ -14,7 +14,7 @@
           class="w-full px-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-bg-dark text-primary-navy dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
           :class="{'border-danger': errors.name}"
         >
-        <p v-if="errors.name" class="text-danger text-xs mt-1">{{ errors.name }}</p>
+        <p v-if="errors.name" data-field-error class="text-danger text-xs mt-1">{{ errors.name }}</p>
         <p v-else class="text-muted text-xs mt-1">{{ form.name.length }}/255</p>
       </div>
 
