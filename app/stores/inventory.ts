@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { ApiProduct } from '~/stores/products'
 
 export interface InventoryItem {
   id: string
@@ -36,48 +37,38 @@ export const useInventoryStore = defineStore('inventory', () => {
   const isMovementDrawerOpen = ref(false)
   const actionTarget = ref<InventoryItem | null>(null)
   
-  // Mock Data
-  const mockData: InventoryItem[] = [
-    {
-      id: 'inv-1',
-      productId: 'prod-1',
-      productName: 'Samsung Galaxy S24 Ultra',
-      productImage: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&q=80',
-      sku: 'SAM-S24U-BLK',
-      currentStock: 45,
-      reservedStock: 5,
-      availableStock: 40,
-      reorderLevel: 10,
-      status: 'in_stock',
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'inv-2',
-      productId: 'prod-2',
-      productName: 'Apple AirPods Pro 2',
-      sku: 'APP-PRO2-WHT',
-      currentStock: 8,
-      reservedStock: 2,
-      availableStock: 6,
-      reorderLevel: 15,
-      status: 'low_stock',
-      updatedAt: new Date(Date.now() - 86400000).toISOString()
-    },
-    {
-      id: 'inv-3',
-      productId: 'prod-3',
-      productName: 'Sony WH-1000XM5',
-      sku: 'SONY-XM5-BLK',
-      currentStock: 0,
-      reservedStock: 0,
-      availableStock: 0,
-      reorderLevel: 5,
-      status: 'out_of_stock',
-      updatedAt: new Date(Date.now() - 172800000).toISOString()
-    }
-  ]
+  // One row per simple product, or per variant of a variable product
+  const toItems = (p: ApiProduct): InventoryItem[] => {
+    const f = p.form
+    if (!f.trackInventory) return []
+    const reorderLevel = f.lowStockThreshold ?? 5
+    const status = (stock: number): InventoryItem['status'] =>
+      p.form.status === 'archived' ? 'unavailable' : stock <= 0 ? 'out_of_stock' : stock <= reorderLevel ? 'low_stock' : 'in_stock'
+    const row = (stock: number, variant?: InventoryItem['variant']): InventoryItem => ({
+      id: `${p.id}::${variant?.id ?? ''}`,
+      productId: p.id,
+      productName: f.name,
+      productImage: f.images[0]?.url,
+      sku: variant?.sku ?? f.sku,
+      variant,
+      currentStock: stock,
+      reservedStock: 0, // orders take stock when they are placed
+      availableStock: Math.max(0, stock),
+      reorderLevel,
+      status: status(stock),
+      updatedAt: p.updatedAt
+    })
 
-  // Getters
+    if (f.type === 'variable') {
+      return f.variants.map((v, i) => row(v.stock ?? 0, {
+        id: v.key,
+        name: p.variants[i]?.label ?? Object.values(v.values).join(' / '),
+        sku: p.variants[i]?.sku ?? v.sku
+      }))
+    }
+    return [row(f.stock ?? 0)]
+  }
+
   const filteredItems = computed(() => {
     let items = [...inventoryItems.value]
 
@@ -117,11 +108,10 @@ export const useInventoryStore = defineStore('inventory', () => {
     loading.value = true
     error.value = null
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 600))
-      inventoryItems.value = [...mockData]
+      const products = await $fetch<ApiProduct[]>('/api/admin/products')
+      inventoryItems.value = products.flatMap(toItems)
     } catch (err: any) {
-      error.value = err.message || 'فشل تحميل بيانات المخزون'
+      error.value = apiError(err, 'فشل تحميل بيانات المخزون')
     } finally {
       loading.value = false
     }
@@ -144,29 +134,20 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
+  // TODO: reason / note belong in a stock movements log (not stored yet)
   const adjustStock = async (itemId: string, quantity: number, type: 'add' | 'subtract' | 'set', reason: string, note?: string) => {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 500))
     const item = inventoryItems.value.find(i => i.id === itemId)
-    if (item) {
-      let newStock = item.currentStock
-      if (type === 'add') newStock += quantity
-      if (type === 'subtract') newStock = Math.max(0, newStock - quantity)
-      if (type === 'set') newStock = quantity
-      
-      item.currentStock = newStock
-      item.availableStock = Math.max(0, newStock - item.reservedStock)
-      
-      // Update status
-      if (item.currentStock === 0) {
-        item.status = 'out_of_stock'
-      } else if (item.currentStock <= item.reorderLevel) {
-        item.status = 'low_stock'
-      } else {
-        item.status = 'in_stock'
-      }
-      
-      item.updatedAt = new Date().toISOString()
+    if (!item) return
+    try {
+      const product = await $fetch<ApiProduct>(`/api/admin/products/${encodeURIComponent(item.productId)}/stock`, {
+        method: 'POST',
+        body: { variantKey: item.variant?.id ?? null, type, quantity }
+      })
+      // Refresh this product's rows (in place) from the saved product
+      const fresh = toItems(product)
+      inventoryItems.value = inventoryItems.value.map(i => fresh.find(f => f.id === i.id) ?? i)
+    } catch (err: any) {
+      throw new Error(apiError(err, 'تعذر تعديل المخزون'))
     }
   }
 

@@ -46,6 +46,7 @@ export interface ShippingAddress {
 export interface OrderItem {
   id: string
   productId?: string
+  variantKey?: string
   slug?: string
   color?: string
   size?: string

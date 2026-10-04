@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) => {
 
   order.status = 'cancelled'
   addTimelineEvent(order, 'cancelled', order.customer.name, 'تم الإلغاء بواسطة العميل')
+  const products = await readCollection('products')
+  restockOrder(order, products)
+  await writeCollection('products', products)
   await writeCollection('orders', orders)
   return toStorefrontOrder(order)
 })

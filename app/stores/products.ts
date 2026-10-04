@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { toRaw } from 'vue'
-import { createDefaultForm, type ProductForm } from '~/composables/useProductForm'
+import type { ProductForm } from '~/composables/useProductForm'
 
 export interface Product {
   id: string
@@ -28,8 +28,16 @@ export interface SavedProduct {
   categoryName: string | null
 }
 
+// Product as stored by the API: editor data + storefront stats
+export interface ApiProduct extends SavedProduct {
+  id: string
+  sold: number
+  createdAt: string
+  updatedAt: string
+}
+
 // List row from saved editor data; variable products show the lowest price and total stock
-const toListItem = (id: string, { form, variants, categoryName }: SavedProduct): Product => {
+const toListItem = ({ id, form, variants, categoryName, updatedAt }: ApiProduct): Product => {
   const prices = variants.map(v => v.price).filter((p): p is number => p != null)
   return {
     id,
@@ -42,7 +50,7 @@ const toListItem = (id: string, { form, variants, categoryName }: SavedProduct):
     stock: form.type === 'variable' ? variants.reduce((s, v) => s + v.stock, 0) : form.stock ?? 0,
     status: form.status,
     category: form.categoryId ? { id: form.categoryId, name: categoryName || '' } : undefined,
-    updatedAt: 'الآن',
+    updatedAt: new Date(updatedAt).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long' }),
     type: form.type,
     variantsCount: variants.length
   }
@@ -53,10 +61,10 @@ export const useProductsStore = defineStore('products', {
     products: [] as Product[],
     loading: false,
     error: null as string | null,
-    totalProducts: 248,
-    publishedCount: 218,
-    draftCount: 18,
-    outOfStockCount: 12,
+    totalProducts: 0,
+    publishedCount: 0,
+    draftCount: 0,
+    outOfStockCount: 0,
     
     // Filters and Pagination
     currentPage: 1,
@@ -72,12 +80,7 @@ export const useProductsStore = defineStore('products', {
     // View state
     viewMode: 'table' as 'table' | 'grid',
     
-    selectedProducts: [] as string[],
-
-    // Full editor data of products saved from the dashboard, by id.
-    // Kept apart so fetchProducts' mock list doesn't overwrite them.
-    // TODO: Remove once products come from the API
-    savedProducts: {} as Record<string, SavedProduct>
+    selectedProducts: [] as string[]
   }),
   
   getters: {
@@ -134,152 +137,65 @@ export const useProductsStore = defineStore('products', {
       this.loading = true
       this.error = null
       
-      // Mock API call
       try {
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        this.products = [
-          {
-            id: '1',
-            name: 'سماعات لاسلكية Pro',
-            slug: 'wireless-headphones-pro',
-            sku: 'EDX-00124',
-            price: 1299,
-            stock: 24,
-            status: 'published',
-            category: { id: 'c1', name: 'إلكترونيات' },
-            updatedAt: 'منذ ساعتين',
-            image: ''
-          },
-          {
-            id: '2',
-            name: 'ساعة ذكية',
-            slug: 'smart-watch',
-            sku: 'EDX-00231',
-            price: 2499,
-            stock: 8,
-            status: 'published',
-            category: { id: 'c1', name: 'إلكترونيات' },
-            updatedAt: 'منذ 5 ساعات',
-            image: ''
-          },
-          {
-            id: '3',
-            name: 'حقيبة ظهر',
-            slug: 'backpack',
-            sku: 'EDX-00345',
-            price: 899,
-            stock: 45,
-            status: 'published',
-            category: { id: 'c2', name: 'حقائب' },
-            updatedAt: 'منذ 6 ساعات',
-            image: ''
-          },
-          {
-            id: '4',
-            name: 'كيبورد ميكانيكي',
-            slug: 'mechanical-keyboard',
-            sku: 'EDX-00412',
-            price: 1750,
-            stock: 0,
-            status: 'draft',
-            category: { id: 'c1', name: 'إلكترونيات' },
-            updatedAt: 'منذ يوم',
-            image: ''
-          },
-          {
-            id: '5',
-            name: 'ماوس لاسلكي',
-            slug: 'wireless-mouse',
-            sku: 'EDX-00567',
-            price: 650,
-            stock: 12,
-            status: 'published',
-            category: { id: 'c1', name: 'إلكترونيات' },
-            updatedAt: 'منذ يوم',
-            image: ''
-          },
-          {
-            id: '6',
-            name: 'شاحن سريع',
-            slug: 'fast-charger',
-            sku: 'EDX-00678',
-            price: 450,
-            stock: 3,
-            status: 'published',
-            category: { id: 'c3', name: 'إكسسوارات' },
-            updatedAt: 'منذ يومين',
-            image: ''
-          },
-          {
-            id: '7',
-            name: 'حقيبة لابتوب',
-            slug: 'laptop-bag',
-            sku: 'EDX-00789',
-            price: 1200,
-            stock: 18,
-            status: 'draft',
-            category: { id: 'c2', name: 'حقائب' },
-            updatedAt: 'منذ 3 أيام',
-            image: ''
-          }
-        ]
-        // Saved products replace their mock row, new ones go first
-        for (const [id, saved] of Object.entries(this.savedProducts).reverse()) {
-          const row = toListItem(id, saved)
-          const index = this.products.findIndex(p => p.id === id)
-          if (index === -1) this.products.unshift(row)
-          else this.products[index] = row
-        }
+        const products = await $fetch<ApiProduct[]>('/api/admin/products')
+        this.products = products.map(toListItem)
+        this.computeStats()
       } catch (err: any) {
-        this.error = err.message || 'تعذر تحميل المنتجات'
+        this.error = apiError(err, 'تعذر تحميل المنتجات')
       } finally {
         this.loading = false
       }
     },
+
+    computeStats() {
+      this.totalProducts = this.products.length
+      this.publishedCount = this.products.filter(p => p.status === 'published').length
+      this.draftCount = this.products.filter(p => p.status === 'draft').length
+      this.outOfStockCount = this.products.filter(p => p.stock === 0).length
+    },
     
-    // Editor data for a product: the saved form, or one built from the list row
+    // Editor data for a product
     async getProductForm(id: string): Promise<ProductForm | null> {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 400))
-      if (this.savedProducts[id]) return structuredClone(toRaw(this.savedProducts[id].form))
-      if (!this.products.length) await this.fetchProducts()
-      const p = this.products.find(x => x.id === id)
-      if (!p) return null
-      return {
-        ...createDefaultForm(),
-        name: p.name,
-        price: p.price,
-        compareAtPrice: p.compareAtPrice ?? null,
-        sku: p.sku,
-        stock: p.stock,
-        status: p.status,
-        categoryId: p.category?.id ?? null,
-        images: p.image ? [{ id: 'img1', url: p.image, name: p.name }] : [],
-        seo: { title: '', description: '', slug: p.slug }
+      try {
+        const product = await $fetch<ApiProduct>(`/api/admin/products/${encodeURIComponent(id)}`)
+        return structuredClone(product.form)
+      } catch (err: any) {
+        if (err?.statusCode === 404) return null
+        throw new Error(apiError(err, 'تعذر تحميل المنتج'))
       }
     },
 
     async saveProduct(id: string | null, saved: SavedProduct) {
-      // TODO: Replace with actual API call (multipart upload for images)
-      await new Promise(resolve => setTimeout(resolve, 800))
-      const productId = id ?? `p-${Date.now()}`
-      this.savedProducts[productId] = structuredClone(toRaw(saved))
+      // TODO: images are saved as URLs; real uploads need a multipart endpoint
+      const body = structuredClone(toRaw(saved))
+      try {
+        const product = id
+          ? await $fetch<ApiProduct>(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'PUT', body })
+          : await $fetch<ApiProduct>('/api/admin/products', { method: 'POST', body })
 
-      const row = toListItem(productId, saved)
-      const index = this.products.findIndex(p => p.id === productId)
-      if (index === -1) this.products.unshift(row)
-      else this.products[index] = row
-      return productId
+        const row = toListItem(product)
+        const index = this.products.findIndex(p => p.id === product.id)
+        if (index === -1) this.products.unshift(row)
+        else this.products[index] = row
+        this.computeStats()
+        return product.id
+      } catch (err: any) {
+        throw new Error(apiError(err, 'حدث خطأ أثناء حفظ المنتج'))
+      }
     },
 
     async deleteProduct(id: string) {
+      await $fetch(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
       this.products = this.products.filter(p => p.id !== id)
       this.selectedProducts = this.selectedProducts.filter(pid => pid !== id)
+      this.computeStats()
     },
     
     async bulkDelete() {
-      this.products = this.products.filter(p => !this.selectedProducts.includes(p.id))
+      for (const id of [...this.selectedProducts]) {
+        await this.deleteProduct(id)
+      }
       this.selectedProducts = []
     },
     

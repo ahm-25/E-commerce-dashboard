@@ -1,12 +1,15 @@
 // Checkout: validates everything against the dashboard data and stores the order
 export default defineEventHandler(async (event) => {
   const input = await readBody<PlaceOrderInput>(event)
-  const [orders, discounts, shipping, payments] = await Promise.all([
-    readCollection('orders'), readCollection('discounts'), readCollection('shipping'), readCollection('payments')
+  const [orders, discounts, shipping, payments, products] = await Promise.all([
+    readCollection('orders'), readCollection('discounts'), readCollection('shipping'), readCollection('payments'), readCollection('products')
   ])
 
   try {
-    const { order, discountId } = placeOrder(input, { orders, discounts, shipping, payments })
+    const { order, discountId, lines } = placeOrder(input, { orders, discounts, shipping, payments, products })
+
+    reserveStock(lines)
+    await writeCollection('products', products)
 
     if (discountId) {
       const discount = discounts.find(d => d.id === discountId)!

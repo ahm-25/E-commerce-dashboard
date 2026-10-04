@@ -16,6 +16,20 @@ export interface Category {
   updatedAt: string
 }
 
+// Builds the tree from the API's flat list (sorted by sortOrder)
+const buildTree = (flat: Category[]): Category[] => {
+  const byId = new Map(flat.map(c => [c.id, { ...c, children: [] as Category[] }]))
+  const roots: Category[] = []
+  for (const c of byId.values()) {
+    const parent = c.parentId ? byId.get(c.parentId) : undefined
+    if (parent) parent.children!.push(c)
+    else roots.push(c)
+  }
+  return roots
+}
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long' })
+
 export type CategoryInput = Pick<Category, 'name' | 'slug' | 'description' | 'image' | 'parentId' | 'status' | 'sortOrder'>
 
 const removeFromTree = (cats: Category[], targetId: string): Category[] => {
@@ -31,10 +45,10 @@ export const useCategoriesStore = defineStore('categories', {
     error: null as string | null,
     
     // Stats
-    totalCategories: 24,
-    mainCategoriesCount: 8,
-    subCategoriesCount: 16,
-    visibleCategoriesCount: 21,
+    totalCategories: 0,
+    mainCategoriesCount: 0,
+    subCategoriesCount: 0,
+    visibleCategoriesCount: 0,
     
     // Filters and Search
     searchQuery: '',
@@ -155,155 +169,38 @@ export const useCategoriesStore = defineStore('categories', {
     async fetchCategories() {
       this.loading = true
       this.error = null
-      
-      // Mock API call
       try {
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        this.categories = [
-          {
-            id: 'c1',
-            name: 'الإلكترونيات',
-            slug: 'electronics',
-            type: 'main',
-            productCount: 84,
-            status: 'visible',
-            sortOrder: 1,
-            createdAt: '2023-01-01',
-            updatedAt: 'منذ ساعتين',
-            image: '',
-            children: [
-              {
-                id: 'c1-1',
-                name: 'الهواتف',
-                slug: 'phones',
-                parentId: 'c1',
-                type: 'sub',
-                productCount: 32,
-                status: 'visible',
-                sortOrder: 1,
-                createdAt: '2023-01-02',
-                updatedAt: 'منذ 3 ساعات',
-                image: '',
-                children: []
-              },
-              {
-                id: 'c1-2',
-                name: 'الكمبيوترات المحمولة',
-                slug: 'laptops',
-                parentId: 'c1',
-                type: 'sub',
-                productCount: 21,
-                status: 'visible',
-                sortOrder: 2,
-                createdAt: '2023-01-02',
-                updatedAt: 'منذ 3 ساعات',
-                image: '',
-                children: []
-              },
-              {
-                id: 'c1-3',
-                name: 'السماعات',
-                slug: 'headphones',
-                parentId: 'c1',
-                type: 'sub',
-                productCount: 18,
-                status: 'visible',
-                sortOrder: 3,
-                createdAt: '2023-01-02',
-                updatedAt: 'منذ 4 ساعات',
-                image: '',
-                children: []
-              }
-            ]
-          },
-          {
-            id: 'c2',
-            name: 'الملابس',
-            slug: 'clothing',
-            type: 'main',
-            productCount: 56,
-            status: 'visible',
-            sortOrder: 2,
-            createdAt: '2023-01-01',
-            updatedAt: 'منذ 5 ساعات',
-            image: '',
-            children: []
-          },
-          {
-            id: 'c3',
-            name: 'المنزل والمطبخ',
-            slug: 'home-kitchen',
-            type: 'main',
-            productCount: 42,
-            status: 'hidden',
-            sortOrder: 3,
-            createdAt: '2023-01-01',
-            updatedAt: 'منذ يوم',
-            image: '',
-            children: []
-          },
-          {
-            id: 'c4',
-            name: 'الرياضة واللياقة',
-            slug: 'sports',
-            type: 'main',
-            productCount: 28,
-            status: 'visible',
-            sortOrder: 4,
-            createdAt: '2023-01-01',
-            updatedAt: 'منذ يوم',
-            image: '',
-            children: []
-          },
-          {
-            id: 'c5',
-            name: 'الجمال والعناية',
-            slug: 'beauty',
-            type: 'main',
-            productCount: 33,
-            status: 'visible',
-            sortOrder: 5,
-            createdAt: '2023-01-01',
-            updatedAt: 'منذ يوم',
-            image: '',
-            children: []
-          }
-        ]
+        const flat = await $fetch<Category[]>('/api/admin/categories')
+        this.categories = buildTree(flat.map(c => ({ ...c, updatedAt: formatDate(c.updatedAt) })))
+        this.computeStats()
       } catch (err: any) {
-        this.error = err.message || 'تعذر تحميل الأقسام'
+        this.error = apiError(err, 'تعذر تحميل الأقسام')
       } finally {
         this.loading = false
       }
     },
+
+    computeStats() {
+      const all = this.flatCategories
+      this.totalCategories = all.length
+      this.mainCategoriesCount = all.filter(c => c.type === 'main').length
+      this.subCategoriesCount = all.filter(c => c.type === 'sub').length
+      this.visibleCategoriesCount = all.filter(c => c.status === 'visible').length
+    },
     
+    // The server moves sub-categories up and un-assigns products; reload to reflect that
     async deleteCategory(id: string) {
-      // Recursive delete function for mock
-      const deleteRecursive = (cats: Category[], targetId: string): Category[] => {
-        return cats.filter(c => {
-          if (c.id === targetId) return false;
-          if (c.children) {
-            c.children = deleteRecursive(c.children, targetId);
-          }
-          return true;
-        })
-      }
-      this.categories = deleteRecursive(this.categories, id)
+      await $fetch(`/api/admin/categories/${encodeURIComponent(id)}`, { method: 'DELETE' })
       this.selectedCategories = this.selectedCategories.filter(cid => cid !== id)
+      await this.fetchCategories()
     },
     
     async bulkDelete() {
-       const deleteRecursiveBulk = (cats: Category[], targetIds: string[]): Category[] => {
-        return cats.filter(c => {
-          if (targetIds.includes(c.id)) return false;
-          if (c.children) {
-            c.children = deleteRecursiveBulk(c.children, targetIds);
-          }
-          return true;
-        })
+      for (const id of [...this.selectedCategories]) {
+        await $fetch(`/api/admin/categories/${encodeURIComponent(id)}`, { method: 'DELETE' })
       }
-      this.categories = deleteRecursiveBulk(this.categories, this.selectedCategories)
       this.selectedCategories = []
+      await this.fetchCategories()
     },
     
     clearFilters() {
@@ -337,61 +234,42 @@ export const useCategoriesStore = defineStore('categories', {
     },
     
     async updateVisibility(id: string, status: 'visible' | 'hidden') {
-      const updateRecursive = (cats: Category[]) => {
-        for (const c of cats) {
-          if (c.id === id) {
-            c.status = status;
-            return true;
-          }
-          if (c.children && updateRecursive(c.children)) {
-            return true;
-          }
-        }
-        return false;
-      }
-      updateRecursive(this.categories)
+      await $fetch(`/api/admin/categories/${encodeURIComponent(id)}`, { method: 'PUT', body: { status } })
+      const category = this.categoryById(id)
+      if (category) category.status = status
+      this.computeStats()
     },
     
+    // Persists the new order as sortOrder (position in the flattened tree)
     async reorderCategories(newCategories: Category[]) {
-      this.categories = newCategories;
+      this.categories = newCategories
+      const changed = this.flatCategories
+        .map((c, index) => ({ c, sortOrder: index + 1 }))
+        .filter(({ c, sortOrder }) => c.sortOrder !== sortOrder)
+      for (const { c, sortOrder } of changed) {
+        c.sortOrder = sortOrder
+        await $fetch(`/api/admin/categories/${encodeURIComponent(c.id)}`, { method: 'PUT', body: { sortOrder } })
+      }
     },
 
     async createCategory(data: CategoryInput) {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      const now = new Date().toISOString()
-      const category: Category = {
-        ...data,
-        id: `cat-${Date.now()}`,
-        type: data.parentId ? 'sub' : 'main',
-        productCount: 0,
-        children: [],
-        createdAt: now,
-        updatedAt: 'الآن'
+      try {
+        const created = await $fetch<Category>('/api/admin/categories', { method: 'POST', body: data })
+        await this.fetchCategories()
+        return created
+      } catch (err: any) {
+        throw new Error(apiError(err, 'تعذر حفظ القسم'))
       }
-      this.insertIntoTree(category)
-      return category
     },
 
     async updateCategory(id: string, data: CategoryInput) {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      const existing = this.categoryById(id)
-      if (!existing) throw new Error('القسم غير موجود')
-
-      const updated: Category = {
-        ...existing,
-        ...data,
-        type: data.parentId ? 'sub' : 'main',
-        updatedAt: 'الآن'
+      try {
+        const updated = await $fetch<Category>(`/api/admin/categories/${encodeURIComponent(id)}`, { method: 'PUT', body: data })
+        await this.fetchCategories()
+        return updated
+      } catch (err: any) {
+        throw new Error(apiError(err, 'تعذر تحديث القسم'))
       }
-
-      // Remove then re-insert so a parent change moves the category in the tree
-      this.categories = removeFromTree(this.categories, id)
-      this.insertIntoTree(updated)
-      return updated
     },
 
     insertIntoTree(category: Category) {

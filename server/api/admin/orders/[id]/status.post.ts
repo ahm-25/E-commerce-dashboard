@@ -12,7 +12,15 @@ export default defineEventHandler(async (event) => {
   const order = orders.find(o => o.id === id)
   if (!order) throw createError({ statusCode: 404, statusMessage: 'Not found', data: { message: 'الطلب غير موجود' } })
 
+  const wasCancelled = order.status === 'cancelled'
   applyStatusChange(order, status, note)
+
+  // Cancelling gives the items back to stock (refunds are restocked from the inventory page)
+  if (status === 'cancelled' && !wasCancelled) {
+    const products = await readCollection('products')
+    restockOrder(order, products)
+    await writeCollection('products', products)
+  }
   await writeCollection('orders', orders)
   return order
 })

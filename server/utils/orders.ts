@@ -3,6 +3,7 @@ import type { Discount } from '~/stores/discounts'
 import type { OrderDetails, OrderItem, OrderTimelineEvent } from '~/stores/orders'
 import type { ShippingData, PaymentsData } from './seed'
 import type { CustomerHistory, CouponResult } from './storefront'
+import type { StoredProduct } from './catalog'
 
 // Orders are stored in the dashboard's OrderDetails shape; the storefront gets
 // its own shape through toStorefrontOrder().
@@ -145,21 +146,84 @@ export interface PlaceOrderInput {
   paymentMethodId: string
   orderNotes?: string
   couponCode?: string | null
-  items: { productId: string, slug?: string, name: string, image?: string, price: number, quantity: number, color?: string, size?: string }[]
+  // Only productId / variantId / quantity are used: name, price and image come from the catalog
+  items: { productId: string, variantId?: string | null, quantity: number }[]
 }
 
 export interface PlaceOrderContext {
+  products: StoredProduct[]
   orders: OrderDetails[]
   discounts: Discount[]
   shipping: ShippingData
   payments: PaymentsData
 }
 
-// Totals are recomputed here: the client's numbers are never trusted.
-// TODO: item prices still come from the client until the catalog is shared too.
-export function placeOrder(input: PlaceOrderInput, ctx: PlaceOrderContext): { order: OrderDetails, discountId?: string } {
-  const items = (input.items ?? []).filter(i => i && Number.isInteger(i.quantity) && i.quantity > 0 && i.price >= 0)
-  if (items.length === 0 || items.length !== input.items.length) throw new OrderError('السلة فارغة أو تحتوي على منتجات غير صالحة')
+// One order line resolved against the catalog
+interface ResolvedLine {
+  product: StoredProduct
+  variantKey: string | null
+  productId: string
+  slug: string
+  name: string
+  image?: string
+  color?: string
+  size?: string
+  price: number
+  quantity: number
+}
+
+function resolveLines(input: PlaceOrderInput['items'], products: StoredProduct[]): ResolvedLine[] {
+  const raw = input ?? []
+  if (raw.length === 0 || raw.some(i => !i || !Number.isInteger(i.quantity) || i.quantity < 1)) {
+    throw new OrderError('السلة فارغة أو تحتوي على منتجات غير صالحة')
+  }
+
+  // Same product/variant on several lines counts once for the stock check
+  const requested = new Map<string, number>()
+  const lines = raw.map(i => {
+    const product = products.find(p => p.id === i.productId)
+    if (!product || !isPublic(product)) throw new OrderError('أحد المنتجات في السلة لم يعد متاحاً')
+
+    const variantKey = product.form.type === 'variable' ? (i.variantId ?? null) : null
+    const variant = variantKey ? product.form.variants.find(v => v.key === variantKey) : null
+    if (product.form.type === 'variable' && !variant) throw new OrderError(`اختر اللون/المقاس لمنتج "${product.form.name}"`)
+
+    const optionValue = (re: RegExp) => {
+      const option = product.form.options.find(o => re.test(o.name))
+      return option && variant ? variant.values[option.id] : undefined
+    }
+    const key = `${product.id}|${variantKey ?? ''}`
+    requested.set(key, (requested.get(key) ?? 0) + i.quantity)
+
+    return {
+      product,
+      variantKey,
+      productId: product.id,
+      slug: productSlug(product),
+      name: product.form.name,
+      image: product.form.images[0]?.url,
+      color: optionValue(/لون|color/i),
+      size: optionValue(/مقاس|حجم|size/i),
+      price: variantPrice(product, variantKey),
+      quantity: i.quantity
+    }
+  })
+
+  for (const line of lines) {
+    const wanted = requested.get(`${line.productId}|${line.variantKey ?? ''}`)!
+    const available = availableStock(line.product, line.variantKey)
+    if (!line.product.form.allowBackorders && wanted > available) {
+      throw new OrderError(available > 0
+        ? `الكمية المتاحة من "${line.name}" هي ${available} فقط`
+        : `"${line.name}" غير متوفر حالياً`)
+    }
+  }
+  return lines
+}
+
+// Totals are recomputed here from the catalog: the client's numbers are never trusted.
+export function placeOrder(input: PlaceOrderInput, ctx: PlaceOrderContext): { order: OrderDetails, discountId?: string, lines: ResolvedLine[] } {
+  const items = resolveLines(input.items, ctx.products)
   if (!input.customer?.name?.trim() || !input.customer?.phone?.trim()) throw new OrderError('يرجى إدخال الاسم ورقم الهاتف')
   const address = input.shippingAddress
   if (!address?.governorate || !address.city?.trim() || !address.addressDetails?.trim()) throw new OrderError('يرجى إدخال عنوان الشحن كاملاً')
@@ -181,7 +245,7 @@ export function placeOrder(input: PlaceOrderInput, ctx: PlaceOrderContext): { or
     try {
       coupon = evaluateCoupon(
         ctx.discounts,
-        { code: input.couponCode, items: items.map(i => ({ productId: i.productId, price: i.price, quantity: i.quantity })), customerId: input.customerId },
+        { code: input.couponCode, items: items.map(i => ({ productId: i.productId, category: i.product.categoryName ?? undefined, price: i.price, quantity: i.quantity })), customerId: input.customerId },
         customerHistory(ctx.orders, input.customerId)
       )
       discountId = ctx.discounts.find(d => d.method === 'coupon' && d.code.toUpperCase() === coupon!.code.toUpperCase())?.id
@@ -214,9 +278,10 @@ export function placeOrder(input: PlaceOrderInput, ctx: PlaceOrderContext): { or
     items: items.map((i, index) => ({
       id: `i${index + 1}`,
       productId: i.productId,
+      variantKey: i.variantKey ?? undefined,
       slug: i.slug,
       name: i.name,
-      sku: i.productId,
+      sku: i.product.variants.find(v => v.key === i.variantKey)?.sku ?? i.product.form.sku,
       image: i.image,
       color: i.color,
       size: i.size,
@@ -251,7 +316,29 @@ export function placeOrder(input: PlaceOrderInput, ctx: PlaceOrderContext): { or
     updatedAt: now.toISOString()
   }
 
-  return { order, discountId }
+  return { order, discountId, lines: items }
+}
+
+// Takes the ordered quantities out of stock (and counts them as sold)
+export function reserveStock(lines: ResolvedLine[]) {
+  for (const line of lines) {
+    if (line.product.form.trackInventory) changeStock(line.product, line.variantKey, s => s - line.quantity)
+    line.product.sold += line.quantity
+  }
+}
+
+// Puts a cancelled order's items back in stock
+export function restockOrder(order: OrderDetails, products: StoredProduct[]) {
+  for (const item of order.items) {
+    const product = products.find(p => p.id === item.productId)
+    if (!product || !product.form.trackInventory) continue
+    try {
+      changeStock(product, item.variantKey, s => s + item.quantity)
+      product.sold = Math.max(0, product.sold - item.quantity)
+    } catch {
+      // The variant was removed from the product since; nothing to restock
+    }
+  }
 }
 
 // ---------- Storefront shape (E-commerce-v2 types/order.ts) ----------

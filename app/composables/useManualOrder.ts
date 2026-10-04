@@ -147,7 +147,7 @@ const createManualOrder = () => {
     return orders.createManualOrder({
       customer,
       items: form.items.map((i, index) => ({
-        id: `i${index + 1}`, name: i.name, sku: i.sku, image: i.image,
+        id: `i${index + 1}`, productId: i.productId, name: i.name, sku: i.sku, image: i.image,
         quantity: i.quantity, unitPrice: i.unitPrice, total: round2(i.unitPrice * i.quantity)
       })),
       pricing: {
