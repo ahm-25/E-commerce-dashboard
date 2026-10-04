@@ -77,7 +77,7 @@ const handleReject = async () => {
     await store.rejectReview(store.reviewToActOn.id, rejectReason.value)
     store.closeRejectDialog()
   } catch (error) {
-    console.error(error)
+    alert(apiError(error, 'تعذر تنفيذ العملية، حاول مرة أخرى'))
   } finally {
     loading.value = false
   }

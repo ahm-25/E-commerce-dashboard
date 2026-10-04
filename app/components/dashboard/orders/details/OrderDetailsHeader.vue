@@ -34,8 +34,8 @@
             إرسال الفاتورة
           </button>
           <button @click="$emit('print-order')" class="w-full text-right px-4 py-2 text-sm text-text hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2">
-            <Icon name="ph:printer" class="w-4 h-4" />
-            طباعة الطلب
+            <Icon name="ph:barcode" class="w-4 h-4" />
+            طباعة بوليصة الشحن
           </button>
           <div class="h-px bg-border-light dark:bg-border-dark my-1"></div>
           <button v-if="canManage" @click="$emit('cancel-order')" class="w-full text-right px-4 py-2 text-sm text-danger hover:bg-danger/5 flex items-center gap-2">

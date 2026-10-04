@@ -61,7 +61,7 @@ const handleApprove = async () => {
     store.closeApproveDialog()
     // Optional: show toast notification here
   } catch (error) {
-    console.error(error)
+    alert(apiError(error, 'تعذر تنفيذ العملية، حاول مرة أخرى'))
   } finally {
     loading.value = false
   }

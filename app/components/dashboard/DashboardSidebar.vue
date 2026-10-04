@@ -139,6 +139,7 @@ const storeLinks = computed(() => visible([
   { name: 'المخزون', path: '/dashboard/inventory', module: 'products', icon: 'ph:stack' },
   { name: 'الأقسام', path: '/dashboard/categories', module: 'products', icon: 'ph:folders' },
   { name: 'الطلبات', path: '/dashboard/orders', module: 'orders', icon: 'ph:shopping-cart' },
+  { name: 'السلات المتروكة', path: '/dashboard/abandoned-carts', module: 'orders', icon: 'ph:shopping-cart-simple' },
   { name: 'العملاء', path: '/dashboard/customers', module: 'customers', icon: 'ph:users' },
   { name: 'العروض والخصومات', path: '/dashboard/discounts', module: 'discounts', icon: 'ph:ticket' },
   { name: 'التقييمات', path: '/dashboard/reviews', module: 'reviews', icon: 'ph:star' },
@@ -150,6 +151,7 @@ const manageLinks = computed(() => visible([
   { name: 'إعدادات المتجر', path: '/dashboard/store/settings', module: 'storeSettings', icon: 'ph:storefront' },
   { name: 'الشحن', path: '/dashboard/store/shipping', module: 'storeSettings', icon: 'ph:truck' },
   { name: 'طرق الدفع', path: '/dashboard/store/payments', module: 'storeSettings', icon: 'ph:credit-card' },
+  { name: 'التسويق والتتبع', path: '/dashboard/store/marketing', module: 'storeSettings', icon: 'ph:megaphone' },
 ]))
 
 const analyticsLinks = computed(() => visible([

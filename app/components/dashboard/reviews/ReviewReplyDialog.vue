@@ -108,7 +108,7 @@ const handleReply = async () => {
     await store.replyToReview(review.value.id, { content: replyContent.value })
     store.closeReplyDialog()
   } catch (error) {
-    console.error(error)
+    alert(apiError(error, 'تعذر تنفيذ العملية، حاول مرة أخرى'))
   } finally {
     loading.value = false
   }

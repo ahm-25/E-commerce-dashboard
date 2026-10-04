@@ -1,8 +1,8 @@
 // Checkout: validates everything against the dashboard data and stores the order
 export default defineEventHandler(async (event) => {
-  const input = await readBody<PlaceOrderInput>(event)
-  const [orders, discounts, shipping, payments, products] = await Promise.all([
-    readCollection('orders'), readCollection('discounts'), readCollection('shipping'), readCollection('payments'), readCollection('products')
+  const input = await readBody<PlaceOrderInput & { cartToken?: string | null }>(event)
+  const [orders, discounts, shipping, payments, products, carts] = await Promise.all([
+    readCollection('orders'), readCollection('discounts'), readCollection('shipping'), readCollection('payments'), readCollection('products'), readCollection('carts')
   ])
 
   try {
@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
       await writeCollection('discounts', discounts)
     }
     await writeCollection('orders', [...orders, order])
+    if (markRecovered(carts, order, input.cartToken)) await writeCollection('carts', carts)
 
     return toStorefrontOrder(order)
   } catch (err) {

@@ -1,6 +1,9 @@
 import type { Discount } from '~/stores/discounts'
 import type { OrderDetails } from '~/stores/orders'
 import type { StoredProduct, StoredCategory } from './catalog'
+import type { StoredReview } from './reviews'
+import type { MarketingSettings } from './marketing'
+import type { AbandonedCart } from './abandonedCarts'
 
 // Tiny JSON-file "database" shared by the dashboard and the storefront (which
 // reads settings and creates orders). Backed by the `db` storage mount in nuxt.config.ts.
@@ -13,6 +16,9 @@ interface Collections {
   orders: OrderDetails[]
   products: StoredProduct[]
   categories: StoredCategory[]
+  reviews: StoredReview[]
+  marketing: MarketingSettings
+  carts: AbandonedCart[]
 }
 
 const seeds: { [K in keyof Collections]: () => Collections[K] } = {
@@ -21,7 +27,10 @@ const seeds: { [K in keyof Collections]: () => Collections[K] } = {
   payments: seedPayments,
   orders: seedOrders,
   products: seedProducts,
-  categories: seedCategories
+  categories: seedCategories,
+  reviews: seedReviews,
+  marketing: seedMarketing,
+  carts: seedAbandonedCarts
 }
 
 export async function readCollection<K extends keyof Collections>(key: K): Promise<Collections[K]> {

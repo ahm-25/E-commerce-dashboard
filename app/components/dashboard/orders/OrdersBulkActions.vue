@@ -39,10 +39,22 @@
         تصدير
       </button>
       
-      <button class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-text dark:text-white px-3 py-1.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm hidden sm:flex">
+      <a
+        :href="`/dashboard/orders/print?type=label&ids=${store.selectedOrders.join(',')}`"
+        target="_blank"
+        class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-text dark:text-white px-3 py-1.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm hidden sm:flex"
+      >
+        <Icon name="ph:barcode-bold" class="w-4 h-4" />
+        طباعة البوالص
+      </a>
+      <a
+        :href="`/dashboard/orders/print?type=invoice&ids=${store.selectedOrders.join(',')}`"
+        target="_blank"
+        class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-text dark:text-white px-3 py-1.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm hidden sm:flex"
+      >
         <Icon name="ph:printer-bold" class="w-4 h-4" />
-        طباعة
-      </button>
+        طباعة الفواتير
+      </a>
       
       <button 
         @click="store.bulkDelete()"

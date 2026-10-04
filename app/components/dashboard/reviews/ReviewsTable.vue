@@ -25,7 +25,7 @@
       </thead>
       <tbody>
         <ReviewTableRow 
-          v-for="review in store.filteredReviews" 
+          v-for="review in store.paginatedReviews" 
           :key="review.id" 
           :review="review" 
         />

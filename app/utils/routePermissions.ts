@@ -11,6 +11,7 @@ const ROUTE_MODULES: [string, PermissionModule][] = [
   ['/dashboard/inventory', 'products'],
   ['/dashboard/categories', 'products'],
   ['/dashboard/orders', 'orders'],
+  ['/dashboard/abandoned-carts', 'orders'],
   ['/dashboard/customers', 'customers'],
   ['/dashboard/discounts', 'discounts'],
   ['/dashboard/reviews', 'reviews'],
@@ -19,12 +20,13 @@ const ROUTE_MODULES: [string, PermissionModule][] = [
   ['/dashboard/store/settings', 'storeSettings'],
   ['/dashboard/store/shipping', 'storeSettings'],
   ['/dashboard/store/payments', 'storeSettings'],
+  ['/dashboard/store/marketing', 'storeSettings'],
   ['/dashboard/analytics', 'analytics'],
   ['/dashboard/reports', 'analytics']
 ]
 
 // Pages that only create or edit need "manage", listing pages need "view"
-const MANAGE_SEGMENTS = /\/(create|edit)(\/|$)/
+const MANAGE_SEGMENTS = /\/(create|edit|import)(\/|$)/
 
 export const getRoutePermission = (path: string): RoutePermission | null => {
   const match = ROUTE_MODULES.find(([prefix]) => path === prefix || path.startsWith(`${prefix}/`))

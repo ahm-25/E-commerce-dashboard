@@ -274,12 +274,13 @@ const handleAddNote = async () => {
   }
 }
 
+// Print pages open in a new tab so the order stays open here
 const printInvoice = () => {
-  window.print()
+  window.open(`/dashboard/orders/print?ids=${encodeURIComponent(orderId.value)}&type=invoice`, '_blank')
 }
 
 const printOrder = () => {
-  window.print()
+  window.open(`/dashboard/orders/print?ids=${encodeURIComponent(orderId.value)}&type=label`, '_blank')
 }
 
 const canManage = useCanManage('orders')

@@ -432,3 +432,6 @@ export function toStorefrontOrder(o: OrderDetails) {
     notes: o.notes?.find(n => n.type === 'customer')?.content
   }
 }
+
+// Egyptian mobile numbers in any common form (+20 10..., 0020 10..., 010...) -> "1012345678"
+export const normalizePhone = (phone: string) => phone.replace(/\D/g, '').replace(/^(0020|20)/, '').replace(/^0/, '')

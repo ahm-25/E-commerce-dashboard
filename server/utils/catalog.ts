@@ -132,7 +132,7 @@ function buildSeedProduct(s: SeedProduct): StoredProduct {
   }
 }
 
-export const seedProducts = (): StoredProduct[] => ([
+const SEED_PRODUCTS: SeedProduct[] = ([
   { id: 'p-luxury-leather', name: 'حقيبة يد جلدية فاخرة', slug: 'luxury-leather-bag', categoryId: 'cat-handbags', price: 2499, compareAtPrice: 3499, images: [IMG.handbag, IMG.handbag2, IMG.shoulder], brand: 'Coach', rating: 4.8, reviewsCount: 124, sold: 310, daysOld: 40, colors: [['بيج', 4], ['أسود', 6], ['بني', 2]], sizes: ['صغير', 'متوسط', 'كبير'] },
   { id: 'p-classic-tote', name: 'حقيبة توت كلاسيكية', slug: 'classic-tote', categoryId: 'cat-handbags', price: 1899, images: [IMG.tote, IMG.handbag2], brand: 'Michael Kors', rating: 4.6, reviewsCount: 88, sold: 205, daysOld: 70, colors: [['أسود', 8], ['بيج', 5]] },
   { id: 'p-mini-handbag', name: 'حقيبة يد ميني', slug: 'mini-handbag', categoryId: 'cat-handbags', price: 1350, compareAtPrice: 1650, images: [IMG.handbag2, IMG.handbag], brand: 'Charles & Keith', rating: 4.4, reviewsCount: 41, sold: 96, daysOld: 6, colors: [['وردي', 7], ['أبيض', 3]] },
@@ -149,7 +149,14 @@ export const seedProducts = (): StoredProduct[] => ([
   { id: 'p-leather-wallet', name: 'محفظة جلدية', slug: 'leather-wallet', categoryId: 'cat-accessories', price: 625, images: [IMG.wallet], brand: 'Coach', rating: 4.7, reviewsCount: 95, sold: 260, daysOld: 100, colors: [['بني', 15], ['أسود', 12]] },
   { id: 'p-card-holder', name: 'حافظة بطاقات', slug: 'card-holder', categoryId: 'cat-accessories', price: 350, compareAtPrice: 450, images: [IMG.wallet], brand: 'Michael Kors', rating: 4.3, reviewsCount: 21, sold: 88, daysOld: 5, stock: 40 },
   { id: 'p-bag-charm', name: 'ميدالية حقيبة', slug: 'bag-charm', categoryId: 'cat-accessories', price: 220, images: [IMG.wallet], brand: 'Other', rating: 4.0, reviewsCount: 6, sold: 12, daysOld: 1, stock: 3 }
-] as SeedProduct[]).map(buildSeedProduct)
+] as SeedProduct[])
+
+export const seedProducts = (): StoredProduct[] => {
+  const products = SEED_PRODUCTS.map(buildSeedProduct)
+  // Ratings come from the seeded approved reviews, so the two always agree
+  syncProductRatings(products, seedReviews(), products.map(p => p.id))
+  return products
+}
 
 // ---------- Helpers ----------
 

@@ -91,10 +91,14 @@
               <Icon name="ph:file-text" class="w-4 h-4 text-muted" />
               عرض تفاصيل الطلب
             </NuxtLink>
-            <button class="w-full text-right px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 font-medium">
+            <a :href="`/dashboard/orders/print?ids=${order.id}&type=invoice`" target="_blank" class="w-full text-right px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 font-medium">
               <Icon name="ph:printer" class="w-4 h-4 text-muted" />
               طباعة الفاتورة
-            </button>
+            </a>
+            <a :href="`/dashboard/orders/print?ids=${order.id}&type=label`" target="_blank" class="w-full text-right px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 font-medium">
+              <Icon name="ph:barcode" class="w-4 h-4 text-muted" />
+              طباعة بوليصة الشحن
+            </a>
             <button class="w-full text-right px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 font-medium">
               <Icon name="ph:copy" class="w-4 h-4 text-muted" />
               نسخ رقم الطلب

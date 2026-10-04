@@ -1,7 +1,7 @@
-// Product page: full product (options, variants, specs) + related products from its category
+// Product page: full product (options, variants, specs, approved reviews) + related products from its category
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
-  const [products, categories] = await Promise.all([readCollection('products'), readCollection('categories')])
+  const [products, categories, reviews] = await Promise.all([readCollection('products'), readCollection('categories'), readCollection('reviews')])
 
   const product = products.find(p => isPublic(p) && (productSlug(p) === slug || p.id === slug))
   if (!product) throw createError({ statusCode: 404, statusMessage: 'Not found', data: { message: 'المنتج غير موجود' } })
@@ -12,5 +12,12 @@ export default defineEventHandler(async (event) => {
     .slice(0, 4)
     .map(p => toStorefrontProduct(p, categories))
 
-  return { product: toStorefrontProduct(product, categories, true), related }
+  return {
+    product: {
+      ...toStorefrontProduct(product, categories, true),
+      reviews: storefrontReviews(reviews, product.id),
+      ratingDistribution: ratingSummary(reviews, product.id).distribution
+    },
+    related
+  }
 })

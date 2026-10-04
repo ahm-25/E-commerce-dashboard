@@ -22,6 +22,12 @@ export default defineNuxtConfig({
   devServer: {
     port: 3001,
   },
+  runtimeConfig: {
+    public: {
+      // Links sent to customers (abandoned-cart recovery). Override with NUXT_PUBLIC_STOREFRONT_URL.
+      storefrontUrl: 'http://localhost:3000'
+    }
+  },
   nitro: {
     storage: {
       // Shared mock database (discounts, shipping, payments) — see server/utils/db.ts

@@ -60,7 +60,7 @@ const handleHide = async () => {
     await store.hideReview(store.reviewToActOn.id)
     store.closeHideDialog()
   } catch (error) {
-    console.error(error)
+    alert(apiError(error, 'تعذر تنفيذ العملية، حاول مرة أخرى'))
   } finally {
     loading.value = false
   }

@@ -18,6 +18,9 @@ export interface Review {
   title?: string
   content: string
 
+  // The customer received an order containing this product
+  verifiedPurchase?: boolean
+
   media?: {
     id: string
     type: 'image' | 'video'
@@ -77,8 +80,6 @@ interface ReviewsState {
   
   // Pagination
   currentPage: number
-  totalPages: number
-  totalItems: number
   itemsPerPage: number
   
   // Selection
@@ -114,8 +115,6 @@ export const useReviewsStore = defineStore('reviews', {
     sortBy: 'newest',
 
     currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
     itemsPerPage: 10,
     
     selectedReviews: [],
@@ -177,6 +176,19 @@ export const useReviewsStore = defineStore('reviews', {
       return result
     },
     
+    totalItems(): number {
+      return this.filteredReviews.length
+    },
+
+    totalPages(): number {
+      return Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage))
+    },
+
+    paginatedReviews(): Review[] {
+      const page = Math.min(this.currentPage, this.totalPages)
+      return this.filteredReviews.slice((page - 1) * this.itemsPerPage, page * this.itemsPerPage)
+    },
+
     hasActiveFilters: (state) => {
       return state.selectedStatuses.length > 0 || 
              state.selectedRatings.length > 0 ||
@@ -195,122 +207,59 @@ export const useReviewsStore = defineStore('reviews', {
     async fetchReviews() {
       this.loading = true
       this.error = null
-      
+
       try {
-        // TODO: Replace with API call
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        // Mock data
-        this.reviews = [
-          {
-            id: 'REV-10482',
-            productId: 'PROD-001',
-            productName: 'Samsung Galaxy S24 Ultra',
-            productSku: 'SAM-S24U-256',
-            customerId: 'CUS-009281',
-            customerName: 'أحمد محمد',
-            customerEmail: 'ahmed@example.com',
-            rating: 5,
-            content: 'الهاتف ممتاز جداً والخامة رائعة. الشاشة مذهلة والتصوير فوق الوصف. أنصح به بشدة.',
-            media: [
-              { id: 'm1', type: 'image', url: 'https://picsum.photos/400/300?random=1' },
-              { id: 'm2', type: 'image', url: 'https://picsum.photos/400/300?random=2' }
-            ],
-            status: 'pending',
-            createdAt: '2026-09-28T14:30:00Z',
-            updatedAt: '2026-09-28T14:30:00Z'
-          },
-          {
-            id: 'REV-10483',
-            productId: 'PROD-002',
-            productName: 'Apple MacBook Pro M3',
-            productSku: 'APP-MBP-M3',
-            customerId: 'CUS-009282',
-            customerName: 'سارة خالد',
-            customerEmail: 'sara.k@example.com',
-            rating: 4,
-            content: 'اللابتوب قوي جداً وسريع، لكن السعر مرتفع بعض الشيء مقارنة بالمواصفات. البطارية تدوم طويلاً.',
-            status: 'approved',
-            reply: {
-              id: 'rep-1',
-              content: 'شكراً سارة على تقييمك الجميل. نأمل أن تستمتعي بتجربة الاستخدام.',
-              createdAt: '2026-09-27T10:15:00Z',
-              authorName: 'إدارة المتجر'
-            },
-            createdAt: '2026-09-26T09:15:00Z',
-            updatedAt: '2026-09-27T10:15:00Z'
-          },
-          {
-            id: 'REV-10484',
-            productId: 'PROD-003',
-            productName: 'Sony WH-1000XM5',
-            productSku: 'SON-WH5',
-            customerId: 'CUS-009283',
-            customerName: 'محمود علي',
-            rating: 2,
-            content: 'العزل جيد لكن الصوت غير نقي. واجهت مشكلة في التوصيل بالبلوتوث أكثر من مرة.',
-            status: 'hidden',
-            createdAt: '2026-09-20T16:45:00Z',
-            updatedAt: '2026-09-20T16:45:00Z'
-          },
-          {
-            id: 'REV-10485',
-            productId: 'PROD-004',
-            productName: 'Logitech MX Master 3S',
-            productSku: 'LOG-MX3S',
-            customerId: 'CUS-009284',
-            customerName: 'نور الدين ياسر',
-            rating: 5,
-            content: 'أفضل ماوس استخدمته على الإطلاق للعمل. مريح جداً.',
-            status: 'approved',
-            createdAt: '2026-09-25T12:00:00Z',
-            updatedAt: '2026-09-25T12:00:00Z'
-          },
-          {
-            id: 'REV-10486',
-            productId: 'PROD-001',
-            productName: 'Samsung Galaxy S24 Ultra',
-            productSku: 'SAM-S24U-256',
-            customerId: 'CUS-009285',
-            customerName: 'كمال منصور',
-            rating: 1,
-            content: 'وصلني الجهاز مفتوح وتم إرجاعه.',
-            status: 'rejected',
-            createdAt: '2026-09-15T11:00:00Z',
-            updatedAt: '2026-09-16T12:00:00Z'
-          }
-        ]
-        
-        this.totalItems = 2486
-        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage)
-        
-        // Fetch stats as well
-        await this.fetchReviewStats()
-        
-      } catch (err: any) {
-        this.error = err.message || 'حدث خطأ أثناء تحميل التقييمات'
+        this.reviews = await $fetch<Review[]>('/api/admin/reviews')
+        this.fetchReviewStats()
+      } catch (err) {
+        this.error = apiError(err, 'حدث خطأ أثناء تحميل التقييمات')
       } finally {
         this.loading = false
       }
     },
-    
-    async fetchReviewStats() {
-      // TODO: Replace with API call
+
+    // Stats are derived from the loaded reviews
+    fetchReviewStats() {
+      const r = this.reviews
+      const total = r.length
+      const rated = r.filter(x => x.status === 'approved')
       this.stats = {
-        total: 2486,
-        averageRating: 4.6,
-        pending: 24,
-        approved: 2318,
-        hidden: 107,
-        rejected: 37,
-        unanswered: 37,
-        distribution: [
-          { rating: 5, count: 1842, percentage: 74 },
-          { rating: 4, count: 421, percentage: 17 },
-          { rating: 3, count: 143, percentage: 6 },
-          { rating: 2, count: 51, percentage: 2 },
-          { rating: 1, count: 29, percentage: 1 },
-        ]
+        total,
+        averageRating: rated.length ? rated.reduce((s, x) => s + x.rating, 0) / rated.length : 0,
+        pending: r.filter(x => x.status === 'pending').length,
+        approved: rated.length,
+        hidden: r.filter(x => x.status === 'hidden').length,
+        rejected: r.filter(x => x.status === 'rejected').length,
+        unanswered: r.filter(x => !x.reply).length,
+        distribution: ([5, 4, 3, 2, 1] as const).map(rating => {
+          const count = r.filter(x => x.rating === rating).length
+          return { rating, count, percentage: total ? Math.round(count / total * 100) : 0 }
+        })
+      }
+    },
+
+    // Puts the server's copy of the changed reviews in the list
+    applyUpdated(updated: Review[]) {
+      for (const u of updated) {
+        const i = this.reviews.findIndex(r => r.id === u.id)
+        if (i !== -1) this.reviews[i] = u
+      }
+      this.fetchReviewStats()
+    },
+
+    async setStatus(id: string, status: Review['status']) {
+      const updated = await $fetch<Review>(`/api/admin/reviews/${encodeURIComponent(id)}/status`, { method: 'POST', body: { status } })
+      this.applyUpdated([updated])
+    },
+
+    async bulkSetStatus(ids: string[], status: Review['status']) {
+      if (!ids.length) return
+      try {
+        const updated = await $fetch<Review[]>('/api/admin/reviews/bulk', { method: 'POST', body: { ids, status } })
+        this.applyUpdated(updated)
+        this.selectedReviews = []
+      } catch (err) {
+        alert(apiError(err, 'تعذر تحديث التقييمات'))
       }
     },
 
@@ -406,76 +355,37 @@ export const useReviewsStore = defineStore('reviews', {
     },
     
     setPage(page: number) {
-      this.currentPage = page
-      // In real app, re-fetch data
+      this.currentPage = Math.min(Math.max(page, 1), this.totalPages)
     },
 
     async approveReview(id: string) {
-      const review = this.reviews.find(r => r.id === id)
-      if (review) {
-        // TODO: API Call
-        review.status = 'approved'
-        if (this.stats) {
-          this.stats.approved++
-          if (review.status === 'pending') this.stats.pending--
-        }
-      }
+      await this.setStatus(id, 'approved')
     },
 
     async hideReview(id: string) {
-      const review = this.reviews.find(r => r.id === id)
-      if (review) {
-        // TODO: API Call
-        review.status = 'hidden'
-      }
+      await this.setStatus(id, 'hidden')
     },
 
-    async rejectReview(id: string, reason?: string) {
-      const review = this.reviews.find(r => r.id === id)
-      if (review) {
-        // TODO: API Call
-        review.status = 'rejected'
-      }
+    // TODO: store the reason once the backend keeps a moderation log
+    async rejectReview(id: string, _reason?: string) {
+      await this.setStatus(id, 'rejected')
     },
 
     async replyToReview(id: string, payload: { content: string }) {
-      const review = this.reviews.find(r => r.id === id)
-      if (review) {
-        // TODO: API Call
-        review.reply = {
-          id: 'rep-' + Date.now(),
-          content: payload.content,
-          createdAt: new Date().toISOString(),
-          authorName: 'إدارة المتجر'
-        }
-      }
+      const updated = await $fetch<Review>(`/api/admin/reviews/${encodeURIComponent(id)}/reply`, { method: 'POST', body: payload })
+      this.applyUpdated([updated])
     },
-    
+
     async bulkApproveReviews(ids: string[]) {
-      // TODO: API Call
-      ids.forEach(id => {
-        const review = this.reviews.find(r => r.id === id)
-        if (review) review.status = 'approved'
-      })
-      this.selectedReviews = []
+      await this.bulkSetStatus(ids, 'approved')
     },
 
     async bulkHideReviews(ids: string[]) {
-      // TODO: API Call
-      ids.forEach(id => {
-        const review = this.reviews.find(r => r.id === id)
-        if (review) review.status = 'hidden'
-      })
-      this.selectedReviews = []
+      await this.bulkSetStatus(ids, 'hidden')
     },
 
     async bulkRejectReviews(ids: string[]) {
-      // TODO: API Call
-      ids.forEach(id => {
-        const review = this.reviews.find(r => r.id === id)
-        if (review) review.status = 'rejected'
-      })
-      this.selectedReviews = []
+      await this.bulkSetStatus(ids, 'rejected')
     }
   }
 })

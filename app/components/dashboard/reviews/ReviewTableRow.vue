@@ -24,8 +24,9 @@
             {{ review.customerName }}
           </NuxtLink>
           <div class="text-xs text-text-muted dark:text-text-muted-dark mt-0.5 line-clamp-1 text-right">
-            {{ review.customerEmail || review.customerId }}
+            {{ review.customerEmail || (review.customerId === 'guest' ? 'زائر' : review.customerId) }}
           </div>
+          <span v-if="review.verifiedPurchase" class="inline-flex items-center gap-1 text-[11px] font-semibold text-success"><Icon name="ph:seal-check-fill" class="w-3.5 h-3.5" />مشتري موثق</span>
         </div>
       </div>
     </td>
