@@ -14,97 +14,18 @@
     </div>
 
     <!-- Header -->
-    <header 
-      class="bg-white border-b border-gray-100 py-4 px-6 transition-all"
-      :class="{ 'sticky top-0 z-50 shadow-sm': draftAppearance.header.sticky }"
-    >
-      <!-- Classic -->
-      <div v-if="draftAppearance.header.style === 'classic'" class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <img v-if="draftAppearance.logo" :src="draftAppearance.logo" alt="Logo" class="h-8 object-contain" />
-          <div v-else class="text-xl font-bold" :style="{ color: draftAppearance.colors.primary }">متجري</div>
-        </div>
-        <nav class="hidden md:flex items-center gap-6 text-sm font-medium" :style="{ color: draftAppearance.colors.text }">
-          <a href="#" class="hover:opacity-70">الرئيسية</a>
-          <a href="#" class="hover:opacity-70">المنتجات</a>
-          <a href="#" class="hover:opacity-70">التصنيفات</a>
-          <a href="#" class="hover:opacity-70">العروض</a>
-        </nav>
-        <div class="flex items-center gap-4">
-          <button v-if="draftAppearance.header.showSearch" class="text-gray-600 hover:text-black">
-            <Icon name="lucide:search" class="w-5 h-5" />
-          </button>
-          <button v-if="draftAppearance.header.showWishlist" class="text-gray-600 hover:text-black">
-            <Icon name="lucide:heart" class="w-5 h-5" />
-          </button>
-          <button v-if="draftAppearance.header.showCart" class="text-gray-600 hover:text-black relative">
-            <Icon name="lucide:shopping-cart" class="w-5 h-5" />
-            <span class="absolute -top-1 -right-1 w-4 h-4 text-[10px] flex items-center justify-center text-white rounded-full" :style="{ backgroundColor: draftAppearance.colors.primary }">2</span>
-          </button>
-        </div>
-      </div>
-      
-      <!-- Centered -->
-      <div v-else-if="draftAppearance.header.style === 'centered'" class="flex flex-col items-center gap-4">
-        <div class="flex items-center justify-between w-full">
-           <div class="flex items-center gap-4">
-            <button v-if="draftAppearance.header.showSearch" class="text-gray-600 hover:text-black">
-              <Icon name="lucide:search" class="w-5 h-5" />
-            </button>
-          </div>
-          <div class="flex items-center gap-2">
-            <img v-if="draftAppearance.logo" :src="draftAppearance.logo" alt="Logo" class="h-10 object-contain" />
-            <div v-else class="text-2xl font-bold" :style="{ color: draftAppearance.colors.primary }">متجري</div>
-          </div>
-          <div class="flex items-center gap-4">
-            <button v-if="draftAppearance.header.showWishlist" class="text-gray-600 hover:text-black">
-              <Icon name="lucide:heart" class="w-5 h-5" />
-            </button>
-            <button v-if="draftAppearance.header.showCart" class="text-gray-600 hover:text-black relative">
-              <Icon name="lucide:shopping-cart" class="w-5 h-5" />
-              <span class="absolute -top-1 -right-1 w-4 h-4 text-[10px] flex items-center justify-center text-white rounded-full" :style="{ backgroundColor: draftAppearance.colors.primary }">2</span>
-            </button>
-          </div>
-        </div>
-        <nav class="hidden md:flex items-center gap-6 text-sm font-medium" :style="{ color: draftAppearance.colors.text }">
-          <a href="#" class="hover:opacity-70">الرئيسية</a>
-          <a href="#" class="hover:opacity-70">المنتجات</a>
-          <a href="#" class="hover:opacity-70">التصنيفات</a>
-          <a href="#" class="hover:opacity-70">العروض</a>
-        </nav>
-      </div>
-      
-      <!-- Minimal -->
-      <div v-else-if="draftAppearance.header.style === 'minimal'" class="flex items-center justify-between">
-        <button class="md:hidden text-gray-600 hover:text-black">
-            <Icon name="lucide:menu" class="w-6 h-6" />
-        </button>
-        <div class="flex items-center gap-2 mx-auto md:mx-0">
-          <img v-if="draftAppearance.logo" :src="draftAppearance.logo" alt="Logo" class="h-8 object-contain" />
-          <div v-else class="text-xl font-bold" :style="{ color: draftAppearance.colors.primary }">متجري</div>
-        </div>
-        <div class="flex items-center gap-4">
-          <button v-if="draftAppearance.header.showSearch" class="text-gray-600 hover:text-black">
-            <Icon name="lucide:search" class="w-5 h-5" />
-          </button>
-          <button v-if="draftAppearance.header.showCart" class="text-gray-600 hover:text-black relative">
-            <Icon name="lucide:shopping-bag" class="w-5 h-5" />
-            <span class="absolute -top-1 -right-1 w-4 h-4 text-[10px] flex items-center justify-center text-white rounded-full" :style="{ backgroundColor: draftAppearance.colors.primary }">2</span>
-          </button>
-        </div>
-      </div>
-    </header>
+    <DashboardStoreAppearancePreviewHeader :mobile="device === 'mobile'" />
 
     <!-- Main Content -->
-    <main class="flex-1 p-6 space-y-12">
+    <main class="flex-1 space-y-12" :class="isMobile ? 'p-4' : 'p-6'">
       <!-- Hero Section -->
       <div 
-        class="w-full h-64 md:h-80 rounded-2xl flex flex-col items-center justify-center text-center p-8 relative overflow-hidden"
+        class="w-full flex flex-col items-center justify-center text-center p-8 relative overflow-hidden"
         :style="{ backgroundColor: draftAppearance.colors.secondary }"
-        :class="borderRadiusClass"
+        :class="[borderRadiusClass, isMobile ? 'h-64' : 'h-80']"
       >
         <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        <h1 class="text-3xl md:text-4xl font-bold text-white mb-4 relative z-10" :style="{ fontFamily: draftAppearance.typography.fontFamily }">
+        <h1 class="font-bold text-white mb-4 relative z-10" :class="isMobile ? 'text-2xl' : 'text-4xl'" :style="{ fontFamily: draftAppearance.typography.fontFamily }">
           أحدث المنتجات العصرية
         </h1>
         <p class="text-white/80 mb-6 max-w-lg relative z-10">
@@ -121,8 +42,8 @@
 
       <!-- Categories -->
       <section>
-        <h2 class="text-2xl font-bold mb-6 text-center" :style="{ color: draftAppearance.colors.text }">تسوق حسب التصنيف</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h2 class="font-bold mb-6 text-center" :class="isMobile ? 'text-xl' : 'text-2xl'" :style="{ color: draftAppearance.colors.text }">تسوق حسب التصنيف</h2>
+        <div class="grid gap-4" :class="isMobile ? 'grid-cols-2' : 'grid-cols-4'">
           <div v-for="i in 4" :key="i" class="flex flex-col items-center gap-2 group cursor-pointer">
             <div 
               class="w-24 h-24 bg-gray-100 flex items-center justify-center transition-transform group-hover:scale-105"
@@ -138,10 +59,10 @@
       <!-- Products Grid -->
       <section>
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold" :style="{ color: draftAppearance.colors.text }">المنتجات المميزة</h2>
+          <h2 class="font-bold" :class="isMobile ? 'text-xl' : 'text-2xl'" :style="{ color: draftAppearance.colors.text }">المنتجات المميزة</h2>
           <a href="#" class="text-sm font-medium hover:underline" :style="{ color: draftAppearance.colors.primary }">عرض الكل</a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="grid" :class="isMobile ? 'grid-cols-2 gap-3' : device === 'tablet' ? 'grid-cols-3 gap-4' : 'grid-cols-4 gap-6'">
           <div 
             v-for="i in 4" 
             :key="i" 
@@ -185,96 +106,35 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white mt-12 py-12 px-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        
-        <div class="md:col-span-1">
-          <div class="flex items-center gap-2 mb-4">
-             <img v-if="draftAppearance.logo" :src="draftAppearance.logo" alt="Logo" class="h-8 object-contain filter brightness-0 invert" />
-             <div v-else class="text-2xl font-bold text-white">متجري</div>
-          </div>
-          <p class="text-gray-400 text-sm leading-relaxed mb-6">
-            نقدم أفضل المنتجات بأعلى جودة لتناسب ذوقك الرفيع.
-          </p>
-          <div v-if="draftAppearance.footer?.showSocialLinks" class="flex gap-4">
-            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors">
-              <Icon name="lucide:facebook" class="w-5 h-5" />
-            </a>
-            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors">
-              <Icon name="lucide:instagram" class="w-5 h-5" />
-            </a>
-            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors">
-              <Icon name="lucide:twitter" class="w-5 h-5" />
-            </a>
-          </div>
-        </div>
-
-        <div>
-          <h4 class="font-bold mb-4 text-lg">روابط هامة</h4>
-          <ul class="space-y-2 text-sm text-gray-400">
-            <li><a href="#" class="hover:text-white">من نحن</a></li>
-            <li><a href="#" class="hover:text-white">سياسة الخصوصية</a></li>
-            <li><a href="#" class="hover:text-white">الشروط والأحكام</a></li>
-            <li><a href="#" class="hover:text-white">سياسة الاسترجاع</a></li>
-          </ul>
-        </div>
-
-        <div v-if="draftAppearance.footer?.showContactInfo">
-          <h4 class="font-bold mb-4 text-lg">تواصل معنا</h4>
-          <ul class="space-y-3 text-sm text-gray-400">
-            <li class="flex items-center gap-2">
-              <Icon name="lucide:map-pin" class="w-4 h-4" />
-              القاهرة، مصر
-            </li>
-            <li class="flex items-center gap-2">
-              <Icon name="lucide:phone" class="w-4 h-4" />
-              +20 123 456 7890
-            </li>
-            <li class="flex items-center gap-2">
-              <Icon name="lucide:mail" class="w-4 h-4" />
-              support@store.com
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="draftAppearance.footer?.showNewsletter" class="md:col-span-1">
-          <h4 class="font-bold mb-4 text-lg">النشرة البريدية</h4>
-          <p class="text-sm text-gray-400 mb-4">اشترك ليصلك كل جديد وعروضنا الحصرية.</p>
-          <div class="flex gap-2">
-            <input 
-              type="email" 
-              placeholder="البريد الإلكتروني" 
-              class="w-full px-4 py-2 bg-gray-800 border-none text-white focus:ring-2 focus:ring-primary"
-              :class="buttonStyleClass"
-            />
-            <button 
-              class="px-4 py-2 font-bold text-white transition-colors whitespace-nowrap"
-              :class="buttonStyleClass"
-              :style="{ backgroundColor: draftAppearance.colors.primary }"
-            >
-              اشتراك
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-gray-500">© 2026 جميع الحقوق محفوظة</p>
-        <div v-if="draftAppearance.footer?.showPaymentMethods" class="flex items-center gap-2">
-          <div class="w-10 h-6 bg-white rounded flex items-center justify-center"><span class="text-[10px] text-black font-bold">VISA</span></div>
-          <div class="w-10 h-6 bg-white rounded flex items-center justify-center"><span class="text-[10px] text-black font-bold">MC</span></div>
-          <div class="w-10 h-6 bg-white rounded flex items-center justify-center"><span class="text-[10px] text-black font-bold">CASH</span></div>
-        </div>
-      </div>
-    </footer>
+    <div ref="footerEl">
+      <DashboardStoreAppearancePreviewFooter :mobile="device === 'mobile'" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useStoreAppearance } from '~/composables/useStoreAppearance'
+import { computed, ref, watch, nextTick } from 'vue'
+import { useStoreAppearance, useAppearanceFocus } from '~/composables/useStoreAppearance'
+
+// The frame is narrower than the window, so layout follows the chosen device, not CSS breakpoints
+const props = withDefaults(defineProps<{ device?: 'desktop' | 'tablet' | 'mobile' }>(), { device: 'desktop' })
+const isMobile = computed(() => props.device === 'mobile')
 
 const { draftAppearance } = useStoreAppearance()
+
+// The header / footer tabs keep what they change in view: on opening the tab and on every edit
+const focus = useAppearanceFocus()
+const footerEl = ref<HTMLElement | null>(null)
+watch(
+  () => [focus.value, focus.value === 'footer' ? JSON.stringify(draftAppearance.value?.footer) : JSON.stringify(draftAppearance.value?.header), props.device],
+  async () => {
+    await nextTick()
+    const scroller = footerEl.value?.closest('.overflow-y-auto')
+    if (!scroller) return
+    if (focus.value === 'footer') scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
+    else if (focus.value === 'header') scroller.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+)
 
 const rootStyles = computed(() => {
   if (!draftAppearance.value) return {}

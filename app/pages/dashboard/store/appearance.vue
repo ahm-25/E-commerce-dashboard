@@ -20,10 +20,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <!-- Settings Panel -->
-          <fieldset :disabled="!canManage" class="lg:col-span-5 xl:col-span-4 min-w-0 flex flex-col gap-4">
+          <div class="lg:col-span-5 xl:col-span-4 min-w-0 flex flex-col gap-4">
             <ReadOnlyNotice v-if="!canManage" />
-            <DashboardStoreAppearanceSettings />
-          </fieldset>
+            <DashboardStoreAppearanceSettings :readonly="!canManage" />
+          </div>
 
           <!-- Live Preview (sticky on desktop) -->
           <div class="lg:col-span-7 xl:col-span-8 min-w-0 lg:sticky lg:top-8 h-[70vh] lg:h-[calc(100vh-72px-4rem)]">

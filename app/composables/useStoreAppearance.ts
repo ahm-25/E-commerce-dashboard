@@ -1,6 +1,8 @@
 import { storeToRefs } from 'pinia'
 import { useStoreAppearanceStore, type StoreAppearance } from '~/stores/storeAppearance'
 
+export type { StoreAppearance }
+
 export const useStoreAppearance = () => {
   const store = useStoreAppearanceStore()
   const { 
@@ -19,7 +21,7 @@ export const useStoreAppearance = () => {
 
   const updateField = <K extends keyof StoreAppearance>(
     section: K, 
-    field: keyof StoreAppearance[K] | null, 
+    field: keyof NonNullable<StoreAppearance[K]> | null, 
     value: any
   ) => {
     if (!draftAppearance.value) return
@@ -109,3 +111,7 @@ export const useStoreAppearance = () => {
     removeImage
   }
 }
+
+// Settings tab currently open on the appearance page (the preview scrolls to match)
+export type AppearanceSection = 'identity' | 'style' | 'header' | 'footer'
+export const useAppearanceFocus = () => useState<AppearanceSection>('appearance-focus', () => 'identity')

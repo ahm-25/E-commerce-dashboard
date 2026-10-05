@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h3 class="text-sm font-medium text-gray-700 mb-2">شعار المتجر</h3>
-    <p class="text-xs text-gray-500 mb-4">يفضل استخدام صورة واضحة بخلفية شفافة للحصول على أفضل نتيجة. (الحد الأقصى 2MB)</p>
+    <h3 class="text-sm font-medium text-primary-navy dark:text-gray-200 mb-2">شعار المتجر</h3>
+    <p class="text-xs text-muted mb-4">يفضل استخدام صورة واضحة بخلفية شفافة للحصول على أفضل نتيجة. (الحد الأقصى 2MB)</p>
     
     <div class="flex items-start gap-4">
       <div 
-        class="w-32 h-32 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden relative group"
+        class="w-32 h-32 rounded-lg border border-border-light dark:border-border-dark bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative group"
         :class="{'border-dashed border-2 hover:border-primary transition-colors': !logoPreview}"
       >
         <img v-if="logoPreview" :src="logoPreview" alt="Store Logo" class="max-w-full max-h-full object-contain p-2" />
@@ -25,7 +25,7 @@
       </div>
       
       <div class="flex flex-col gap-2 pt-2">
-        <button v-if="!logoPreview" @click="triggerUpload" class="text-sm px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary">
+        <button v-if="!logoPreview" @click="triggerUpload" class="text-sm px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:bg-surface-dark dark:border-border-dark dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary">
           رفع شعار
         </button>
         <input 
@@ -55,8 +55,8 @@ const triggerUpload = () => {
 
 const onFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    const file = target.files[0]
+  const file = target.files?.[0]
+  if (file) {
     if (file.size > 2 * 1024 * 1024) {
       alert('حجم الصورة كبير جداً، الحد الأقصى هو 2MB')
       return

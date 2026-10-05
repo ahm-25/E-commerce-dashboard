@@ -5,32 +5,32 @@
 
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-      <div class="inline-block align-bottom bg-white rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+      <div class="inline-block align-bottom bg-white dark:bg-surface-dark rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white dark:bg-surface-dark px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start sm:flex-row-reverse">
             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 sm:mx-0 sm:h-10 sm:w-10 sm:mr-4">
               <Icon name="lucide:alert-circle" class="h-6 w-6 text-amber-600" />
             </div>
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-right">
-              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              <h3 class="text-lg leading-6 font-medium text-primary-navy dark:text-white" id="modal-title">
                 لديك تغييرات غير محفوظة
               </h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-muted">
                   هل تريد حفظ التغييرات قبل المغادرة؟ إذا غادرت بدون حفظ ستفقد التعديلات التي قمت بها.
                 </p>
               </div>
             </div>
           </div>
         </div>
-        <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3">
+        <div class="bg-gray-50 dark:bg-gray-800/60 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3">
           <button type="button" @click="$emit('confirm')" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">
             حفظ ومغادرة
           </button>
-          <button type="button" @click="$emit('discard')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          <button type="button" @click="$emit('discard')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-border-dark shadow-sm px-4 py-2 bg-white dark:bg-surface-dark text-base font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
             مغادرة بدون حفظ
           </button>
-          <button type="button" @click="$emit('close')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          <button type="button" @click="$emit('close')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-border-dark shadow-sm px-4 py-2 bg-white dark:bg-surface-dark text-base font-medium text-primary-navy dark:text-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
             إلغاء
           </button>
         </div>

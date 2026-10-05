@@ -4,10 +4,10 @@
     
     <div class="space-y-6">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">نوع الخط الأساسي</label>
+        <label class="block text-sm font-medium text-primary-navy dark:text-gray-200 mb-2">نوع الخط الأساسي</label>
         <select 
           v-model="fontFamily" 
-          class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary"
+          class="w-full border-gray-300 dark:border-border-dark dark:bg-surface-dark dark:text-white rounded-lg shadow-sm focus:ring-primary focus:border-primary"
         >
           <option value="Cairo">Cairo</option>
           <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
@@ -18,7 +18,7 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">حجم الخط الأساسي</label>
+        <label class="block text-sm font-medium text-primary-navy dark:text-gray-200 mb-2">حجم الخط الأساسي</label>
         <div class="flex items-center gap-4">
           <input 
             type="range" 
@@ -28,11 +28,11 @@
             step="1"
             class="flex-1"
           />
-          <span class="text-sm font-medium text-gray-700 w-8">{{ baseFontSize }}px</span>
+          <span class="text-sm font-medium text-primary-navy dark:text-gray-200 w-8">{{ baseFontSize }}px</span>
         </div>
       </div>
 
-      <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+      <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-border-light dark:border-border-dark">
         <DashboardStoreAppearanceTypographyPreview />
       </div>
     </div>

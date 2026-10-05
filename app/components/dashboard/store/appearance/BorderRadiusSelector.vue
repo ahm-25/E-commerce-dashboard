@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label class="block text-sm font-medium text-gray-700 mb-3">حواف العناصر</label>
+    <label class="block text-sm font-medium text-primary-navy dark:text-gray-200 mb-3">حواف العناصر</label>
     
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
       <button 
@@ -8,13 +8,13 @@
         :key="option.value"
         @click="borderRadius = option.value"
         class="border rounded-lg p-3 flex flex-col items-center gap-3 transition-colors text-center"
-        :class="borderRadius === option.value ? 'border-primary bg-primary-light ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300'"
+        :class="borderRadius === option.value ? 'border-primary bg-primary-light dark:bg-primary/10 ring-1 ring-primary' : 'border-border-light dark:border-border-dark hover:border-gray-300'"
       >
         <div 
           class="w-12 h-12 bg-gray-200 border border-gray-300"
           :class="option.previewClass"
         ></div>
-        <span class="text-xs font-medium" :class="borderRadius === option.value ? 'text-primary' : 'text-gray-600'">
+        <span class="text-xs font-medium" :class="borderRadius === option.value ? 'text-primary' : 'text-muted'">
           {{ option.label }}
         </span>
       </button>

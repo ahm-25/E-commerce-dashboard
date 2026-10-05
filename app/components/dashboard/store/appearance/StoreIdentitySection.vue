@@ -4,7 +4,7 @@
     
     <div class="space-y-6">
       <DashboardStoreAppearanceLogoUploader />
-      <hr class="border-gray-100" />
+      <hr class="border-border-light dark:border-border-dark" />
       <DashboardStoreAppearanceFaviconUploader />
     </div>
   </div>

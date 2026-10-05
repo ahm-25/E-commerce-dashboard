@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label class="block text-sm font-medium text-gray-700 mb-3">شكل الأزرار</label>
+    <label class="block text-sm font-medium text-primary-navy dark:text-gray-200 mb-3">شكل الأزرار</label>
     
     <div class="grid grid-cols-2 gap-4">
       <button 
@@ -9,7 +9,7 @@
         @click="buttonStyle = option.value"
         class="border p-4 flex flex-col items-center gap-4 transition-colors text-center"
         :class="[
-          buttonStyle === option.value ? 'border-primary bg-primary-light ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300',
+          buttonStyle === option.value ? 'border-primary bg-primary-light dark:bg-primary/10 ring-1 ring-primary' : 'border-border-light dark:border-border-dark hover:border-gray-300',
           'rounded-lg' // Container itself is rounded
         ]"
       >
@@ -20,7 +20,7 @@
         >
           أضف إلى السلة
         </div>
-        <span class="text-xs font-medium" :class="buttonStyle === option.value ? 'text-primary' : 'text-gray-600'">
+        <span class="text-xs font-medium" :class="buttonStyle === option.value ? 'text-primary' : 'text-muted'">
           {{ option.label }}
         </span>
       </button>

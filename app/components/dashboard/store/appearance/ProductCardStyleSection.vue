@@ -8,7 +8,7 @@
         :key="option.value"
         @click="productCardStyle = option.value"
         class="border rounded-xl p-4 flex flex-col items-center gap-4 transition-colors"
-        :class="productCardStyle === option.value ? 'border-primary bg-primary-light ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300'"
+        :class="productCardStyle === option.value ? 'border-primary bg-primary-light dark:bg-primary/10 ring-1 ring-primary' : 'border-border-light dark:border-border-dark hover:border-gray-300'"
       >
         <!-- Mini Product Card Preview -->
         <div 
@@ -29,7 +29,7 @@
           </div>
         </div>
 
-        <span class="text-sm font-medium" :class="productCardStyle === option.value ? 'text-primary' : 'text-gray-600'">
+        <span class="text-sm font-medium" :class="productCardStyle === option.value ? 'text-primary' : 'text-muted'">
           {{ option.label }}
         </span>
       </button>

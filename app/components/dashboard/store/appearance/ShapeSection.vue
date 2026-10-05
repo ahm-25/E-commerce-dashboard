@@ -4,7 +4,7 @@
     
     <div class="space-y-8">
       <DashboardStoreAppearanceBorderRadiusSelector />
-      <hr class="border-gray-100" />
+      <hr class="border-border-light dark:border-border-dark" />
       <DashboardStoreAppearanceButtonStyleSelector />
     </div>
   </div>

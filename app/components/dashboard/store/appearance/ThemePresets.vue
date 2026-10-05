@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3 class="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wider">القوالب الجاهزة</h3>
+    <h3 class="text-xs font-medium text-muted mb-3 uppercase tracking-wider">القوالب الجاهزة</h3>
     <div class="flex flex-wrap gap-3">
       <button 
         v-for="preset in presets" 
@@ -20,7 +20,7 @@
             </div>
           </div>
         </div>
-        <span class="text-xs font-medium text-gray-600" :class="{ 'text-primary': isPresetActive(preset) }">
+        <span class="text-xs font-medium text-muted" :class="{ 'text-primary': isPresetActive(preset) }">
           {{ preset.name }}
         </span>
       </button>

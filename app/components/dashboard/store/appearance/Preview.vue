@@ -13,7 +13,7 @@
           'w-[375px] max-w-full': device === 'mobile'
         }"
       >
-        <DashboardStoreAppearanceStorefrontPreview />
+        <DashboardStoreAppearanceStorefrontPreview :device="device" />
       </div>
     </div>
   </div>

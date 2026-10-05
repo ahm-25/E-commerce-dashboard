@@ -1,11 +1,11 @@
 <template>
-  <div class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+  <div class="flex items-center justify-between p-3 border border-border-light dark:border-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
     <div>
-      <label :for="`color-${field}`" class="block text-sm font-medium text-gray-700">{{ label }}</label>
-      <p class="text-xs text-gray-500 mt-0.5">{{ description }}</p>
+      <label :for="`color-${field}`" class="block text-sm font-medium text-primary-navy dark:text-gray-200">{{ label }}</label>
+      <p class="text-xs text-muted mt-0.5">{{ description }}</p>
     </div>
     <div class="flex items-center gap-3">
-      <span class="text-xs font-mono text-gray-500 uppercase">{{ colorValue }}</span>
+      <span class="text-xs font-mono text-muted uppercase">{{ colorValue }}</span>
       <div class="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 shadow-sm cursor-pointer">
         <input 
           :id="`color-${field}`"

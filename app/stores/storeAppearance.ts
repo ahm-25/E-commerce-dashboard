@@ -27,7 +27,8 @@ export interface StoreAppearance {
   }
 
   header: {
-    style: 'classic' | 'centered' | 'minimal'
+    style: HeaderStyle
+    background: SurfaceTone
     sticky: boolean
     showSearch: boolean
     showWishlist: boolean
@@ -41,12 +42,63 @@ export interface StoreAppearance {
   }
 
   footer?: {
+    style?: FooterStyle
+    background?: SurfaceTone
     showNewsletter?: boolean
     showSocialLinks?: boolean
     showContactInfo?: boolean
     showPaymentMethods?: boolean
   }
 }
+
+export type HeaderStyle = 'classic' | 'centered' | 'split' | 'search' | 'floating' | 'minimal'
+export type FooterStyle = 'columns' | 'newsletter' | 'centered' | 'compact'
+// Background of the header / footer: white, near-black, or the brand's primary color
+export type SurfaceTone = 'light' | 'dark' | 'brand'
+
+export const defaultAppearance = (): StoreAppearance => ({
+  logo: '',
+  favicon: '',
+  colors: {
+    primary: '#2563EB',
+    secondary: '#1E40AF',
+    accent: '#3B82F6',
+    text: '#111827',
+    background: '#F9FAFB'
+  },
+  typography: {
+    fontFamily: 'Cairo',
+    baseFontSize: 16
+  },
+  shape: {
+    borderRadius: 'medium',
+    buttonStyle: 'rounded'
+  },
+  productCard: {
+    style: 'elevated'
+  },
+  header: {
+    style: 'classic',
+    background: 'light',
+    sticky: true,
+    showSearch: true,
+    showWishlist: true,
+    showCart: true
+  },
+  announcementBar: {
+    enabled: true,
+    text: 'شحن مجاني للطلبات أكثر من 1000 جنيه',
+    link: ''
+  },
+  footer: {
+    style: 'columns',
+    background: 'dark',
+    showNewsletter: true,
+    showSocialLinks: true,
+    showContactInfo: true,
+    showPaymentMethods: true
+  }
+})
 
 export const useStoreAppearanceStore = defineStore('storeAppearance', {
   state: () => ({
@@ -65,49 +117,11 @@ export const useStoreAppearanceStore = defineStore('storeAppearance', {
       try {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 800))
-        const defaultAppearance: StoreAppearance = {
-          logo: '',
-          favicon: '',
-          colors: {
-            primary: '#2563EB',
-            secondary: '#1E40AF',
-            accent: '#3B82F6',
-            text: '#111827',
-            background: '#F9FAFB'
-          },
-          typography: {
-            fontFamily: 'Cairo',
-            baseFontSize: 16
-          },
-          shape: {
-            borderRadius: 'medium',
-            buttonStyle: 'rounded'
-          },
-          productCard: {
-            style: 'elevated'
-          },
-          header: {
-            style: 'classic',
-            sticky: true,
-            showSearch: true,
-            showWishlist: true,
-            showCart: true
-          },
-          announcementBar: {
-            enabled: true,
-            text: 'شحن مجاني للطلبات أكثر من 1000 جنيه',
-            link: ''
-          },
-          footer: {
-            showNewsletter: true,
-            showSocialLinks: true,
-            showContactInfo: true,
-            showPaymentMethods: true
-          }
-        }
-        
-        this.appearance = JSON.parse(JSON.stringify(defaultAppearance))
-        this.draftAppearance = JSON.parse(JSON.stringify(defaultAppearance))
+        // TODO: Replace with API call; merge the saved data over defaultAppearance() so fields added later get their defaults
+        const saved = defaultAppearance()
+
+        this.appearance = JSON.parse(JSON.stringify(saved))
+        this.draftAppearance = JSON.parse(JSON.stringify(saved))
         this.hasUnsavedChanges = false
         this.lastPublished = new Date(Date.now() - 1000 * 60 * 12).toISOString() // 12 mins ago
       } catch (error) {
@@ -162,47 +176,7 @@ export const useStoreAppearanceStore = defineStore('storeAppearance', {
     },
     
     async resetToDefault() {
-      const defaultAppearance: StoreAppearance = {
-          logo: '',
-          favicon: '',
-          colors: {
-            primary: '#2563EB',
-            secondary: '#1E40AF',
-            accent: '#3B82F6',
-            text: '#111827',
-            background: '#F9FAFB'
-          },
-          typography: {
-            fontFamily: 'Cairo',
-            baseFontSize: 16
-          },
-          shape: {
-            borderRadius: 'medium',
-            buttonStyle: 'rounded'
-          },
-          productCard: {
-            style: 'elevated'
-          },
-          header: {
-            style: 'classic',
-            sticky: true,
-            showSearch: true,
-            showWishlist: true,
-            showCart: true
-          },
-          announcementBar: {
-            enabled: true,
-            text: 'شحن مجاني للطلبات أكثر من 1000 جنيه',
-            link: ''
-          },
-          footer: {
-            showNewsletter: true,
-            showSocialLinks: true,
-            showContactInfo: true,
-            showPaymentMethods: true
-          }
-        }
-      this.draftAppearance = JSON.parse(JSON.stringify(defaultAppearance))
+      this.draftAppearance = defaultAppearance()
       this.hasUnsavedChanges = true
     }
   }
